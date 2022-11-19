@@ -13,4 +13,8 @@ public class ItemMapper {
     public ItemDto toItemDto(Item item) {
         return modelMapper.map(item, ItemDto.class);
     }
+
+    public Item toItem(ItemDto itemDto) {
+        return modelMapper.map(itemDto, Item.class);
+    }
 }
