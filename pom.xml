@@ -111,13 +111,13 @@
 							<phase>compile</phase>
 						</execution>
 					</executions>
-					<!-- <dependencies>
+					<dependencies>
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
 							<version>10.3</version>
 						</dependency>
-					</dependencies> -->
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
