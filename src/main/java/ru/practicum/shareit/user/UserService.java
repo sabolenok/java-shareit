@@ -16,22 +16,22 @@ public class UserService {
     private UserStorage userStorage;
 
     public Collection<User> findAll() {
-        log.info("Получен запрос к эндпоинту GET /users");
         return userStorage.findAll();
     }
 
     public User create(User user) {
-        log.info("Получен запрос к эндпоинту POST /users");
         return userStorage.create(user);
     }
 
     public User put(User user) {
-        log.info("Получен запрос к эндпоинту PUT /users");
         return userStorage.put(user);
     }
 
     public User findById(Integer id) {
-        log.info("Получен запрос к эндпоинту GET /users/{id}");
         return userStorage.findById(id);
+    }
+
+    public void deleteUser(Integer id) {
+        userStorage.deleteUser(id);
     }
 }

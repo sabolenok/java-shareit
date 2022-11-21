@@ -57,4 +57,10 @@ public class UserStorageImpl implements UserStorage {
         }
         return users.get(id);
     }
+
+    @Override
+    public void deleteUser(Integer id) {
+        findById(id);
+        users.remove(id);
+    }
 }
