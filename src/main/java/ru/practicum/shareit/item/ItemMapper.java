@@ -12,6 +12,7 @@ import ru.practicum.shareit.item.model.Item;
 public class ItemMapper {
     @Autowired
     private final ModelMapper modelMapper;
+
     public ItemDto toItemDto(Item item) {
         return modelMapper.map(item, ItemDto.class);
     }

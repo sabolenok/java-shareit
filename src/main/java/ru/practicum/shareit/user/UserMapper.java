@@ -11,6 +11,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 public class UserMapper {
     @Autowired
     private final ModelMapper modelMapper;
+
     public UserDto toUserDto(User user) {
         return modelMapper.map(user, UserDto.class);
     }

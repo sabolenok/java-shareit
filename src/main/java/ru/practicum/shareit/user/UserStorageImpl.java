@@ -72,7 +72,7 @@ public class UserStorageImpl implements UserStorage {
         users.remove(id);
     }
 
-    private void checkEmail (User user){
+    private void checkEmail(User user) {
         for (User u : users.values()) {
             if (u.getEmail().equals(user.getEmail()) && u.getId() != user.getId()) {
                 throw new RuntimeException("Пользователь с таким email уже существует");
