@@ -43,11 +43,17 @@ public class UserStorageImpl implements UserStorage {
         }
         user.setId(id);
         User previous = users.get(id);
-        String email = (user.getEmail() == null || user.getEmail().isBlank()) ? previous.getEmail() : user.getEmail();
-        user.setEmail(email);
+        user.setEmail(
+                (user.getEmail() == null || user.getEmail().isBlank())
+                        ? previous.getEmail()
+                        : user.getEmail()
+        );
         checkEmail(user);
-        String name = (user.getName() == null || user.getName().isBlank()) ? previous.getName() : user.getName();
-        user.setName(name);
+        user.setName(
+                (user.getName() == null || user.getName().isBlank())
+                        ? previous.getName()
+                        : user.getName()
+        );
         users.put(user.getId(), user);
         return user;
     }

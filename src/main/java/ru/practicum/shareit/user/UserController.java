@@ -6,9 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -21,8 +20,7 @@ public class UserController {
 
     @PostMapping
     public UserDto add(@Valid @RequestBody UserDto userDto) {
-        User user = userMapper.toUser(userDto);
-        return userMapper.toUserDto(userService.create(user));
+        return userMapper.toUserDto(userService.create(userMapper.toUser(userDto)));
     }
 
     @GetMapping("/{id}")
@@ -32,8 +30,7 @@ public class UserController {
 
     @PatchMapping("/{id}")
     public UserDto patch(@PathVariable Integer id, @RequestBody UserDto userDto) {
-        User user = userMapper.toUser(userDto);
-        return userMapper.toUserDto(userService.put(id, user));
+        return userMapper.toUserDto(userService.put(id, userMapper.toUser(userDto)));
     }
 
     @DeleteMapping("/{id}")
@@ -43,11 +40,6 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAll() {
-        List<UserDto> allUsers = new ArrayList<>();
-        Collection<User> users = userService.findAll();
-        for (User user : users) {
-            allUsers.add(userMapper.toUserDto(user));
-        }
-        return allUsers;
+        return userService.findAll().stream().map(userMapper::toUserDto).collect(Collectors.toList());
     }
 }

@@ -1,18 +1,16 @@
 package ru.practicum.shareit.item;
 
 import lombok.Getter;
-import org.modelmapper.internal.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.WrongOwnerException;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class ItemStorageImpl implements ItemStorage {
@@ -34,18 +32,18 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public Item findById(int id) {
+        if (!items.containsKey(id)) {
+            throw new NotFoundException("Предмет не найден");
+        }
         return items.get(id);
     }
 
     @Override
     public List<Item> findAll(int userId) {
-        List<Item> userItems = new ArrayList<>();
-        for (Item item : items.values()) {
-            if (userId == item.getOwner().getId()) {
-                userItems.add(item);
-            }
-        }
-        return userItems;
+        return items.values()
+                .stream()
+                .filter(x -> userId == x.getOwner().getId())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -58,31 +56,40 @@ public class ItemStorageImpl implements ItemStorage {
             throw new WrongOwnerException("Пользователь не является владельцем вещи");
         }
         item.setId(id);
-        String name = (item.getName() == null || item.getName().isBlank()) ? foundItem.getName() : item.getName();
-        item.setName(name);
-        String description = (item.getDescription() == null || item.getDescription().isBlank()) ? foundItem.getDescription() : item.getDescription();
-        item.setDescription(description);
-        User owner = (item.getOwner() == null) ? foundItem.getOwner() : item.getOwner();
-        Boolean available = (item.getAvailable() == null) ? foundItem.getAvailable() : item.getAvailable();
-        item.setAvailable(available);
-        item.setOwner(owner);
+        item.setName(
+                (item.getName() == null || item.getName().isBlank())
+                        ? foundItem.getName()
+                        : item.getName()
+        );
+        item.setDescription(
+                (item.getDescription() == null || item.getDescription().isBlank())
+                        ? foundItem.getDescription()
+                        : item.getDescription()
+        );
+        item.setOwner(
+                (item.getOwner() == null)
+                        ? foundItem.getOwner()
+                        : item.getOwner()
+        );
+        item.setAvailable(
+                (item.getAvailable() == null)
+                        ? foundItem.getAvailable()
+                        : item.getAvailable()
+        );
         items.put(id, item);
         return item;
     }
 
     @Override
     public List<Item> search(String text) {
-        text = text.toLowerCase();
-        List<Item> foundItems = new ArrayList<>();
         if (text.isBlank()) {
-            return foundItems;
+            return new ArrayList<>();
         }
-        for (Item item : items.values()) {
-            if (item.getName().toLowerCase().contains(text) || item.getDescription().toLowerCase().contains(text)
-            && item.getAvailable()) {
-                foundItems.add(item);
-            }
-        }
-        return foundItems;
+        String finalText = text.toLowerCase();
+        return items.values()
+                .stream()
+                .filter(x -> x.getName().toLowerCase().contains(finalText) || x.getDescription().toLowerCase().contains(finalText))
+                .filter(Item::getAvailable)
+                .collect(Collectors.toList());
     }
 }

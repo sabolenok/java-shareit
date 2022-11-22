@@ -3,9 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserStorage;
 
 import java.util.List;
@@ -20,8 +18,7 @@ public class ItemServiceImpl implements ItemService{
 
     @Override
     public Item addNewItem(int userId, Item item) {
-        User user = userStorage.findById(userId);
-        item.setOwner(user);
+        item.setOwner(userStorage.findById(userId));
         return itemStorage.save(item);
     }
 

@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/items")
@@ -22,8 +21,7 @@ public class ItemController {
     @PostMapping
     public ItemDto add(@RequestHeader("X-Sharer-User-Id") Integer userId,
                        @Valid @RequestBody ItemDto itemDto) {
-        Item item = itemMapper.toItem(itemDto);
-        return itemMapper.toItemDto(itemService.addNewItem(userId, item));
+        return itemMapper.toItemDto(itemService.addNewItem(userId, itemMapper.toItem(itemDto)));
     }
 
     @GetMapping("/{id}")
@@ -33,29 +31,24 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        List<Item> items = itemService.getAll(userId);
-        List<ItemDto> itemsDto = new ArrayList<>();
-        for (Item item : items) {
-            itemsDto.add(itemMapper.toItemDto(item));
-        }
-        return itemsDto;
+        return itemService.getAll(userId)
+                .stream()
+                .map(itemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/{id}")
     public ItemDto patch(@RequestHeader("X-Sharer-User-Id") Integer userId,
                          @PathVariable Integer id, @RequestBody ItemDto itemDto) {
-        Item item = itemMapper.toItem(itemDto);
-        return itemMapper.toItemDto(itemService.put(userId, id, item));
+        return itemMapper.toItemDto(itemService.put(userId, id, itemMapper.toItem(itemDto)));
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                     @RequestParam String text) {
-        List<Item> items = itemService.search(text);
-        List<ItemDto> itemsDto = new ArrayList<>();
-        for (Item item : items) {
-            itemsDto.add(itemMapper.toItemDto(item));
-        }
-        return itemsDto;
+        return itemService.search(text)
+                .stream()
+                .map(itemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 }
