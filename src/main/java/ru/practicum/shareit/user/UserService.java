@@ -23,8 +23,8 @@ public class UserService {
         return userStorage.create(user);
     }
 
-    public User put(User user) {
-        return userStorage.put(user);
+    public User put(int id, User user) {
+        return userStorage.put(id, user);
     }
 
     public User findById(Integer id) {

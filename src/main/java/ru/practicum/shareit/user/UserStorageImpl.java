@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -32,21 +34,25 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public User create(User user) {
+        checkEmail(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("Пользователь \"'{}'\" создан", user.getName());
-
         return user;
     }
 
     @Override
-    public User put(User user) {
-        if (!users.containsKey(user.getId())) {
+    public User put(int id, User user) {
+        if (!users.containsKey(id)) {
             throw new NotFoundException("Пользователь не найден");
         }
+        user.setId(id);
+        User previous = users.get(id);
+        String email = (user.getEmail() == null || user.getEmail().isBlank()) ? previous.getEmail() : user.getEmail();
+        user.setEmail(email);
+        checkEmail(user);
+        String name = (user.getName() == null || user.getName().isBlank()) ? previous.getName() : user.getName();
+        user.setName(name);
         users.put(user.getId(), user);
-        log.info("Пользователь \"'{}'\" изменен", user.getName());
-
         return user;
     }
 
@@ -62,5 +68,13 @@ public class UserStorageImpl implements UserStorage {
     public void deleteUser(Integer id) {
         findById(id);
         users.remove(id);
+    }
+
+    private void checkEmail (User user){
+        for (User u : users.values()) {
+            if (u.getEmail().equals(user.getEmail()) && u.getId() != user.getId()) {
+                throw new RuntimeException("Пользователь с таким email уже существует");
+            }
+        }
     }
 }
