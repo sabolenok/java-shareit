@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ValidationException;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
+@ResponseStatus(HttpStatus.NOT_FOUND)
 public class WrongOwnerException extends ValidationException {
     public WrongOwnerException(String message) {
         super(message);

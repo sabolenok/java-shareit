@@ -53,18 +53,33 @@ public class ItemStorageImpl implements ItemStorage {
         if (!items.containsKey(id)) {
             throw new NotFoundException("Вещь не найдена!");
         }
-        if (item.getOwner().getId() != userId) {
+        Item foundItem = items.get(id);
+        if (foundItem.getOwner().getId() != userId) {
             throw new WrongOwnerException("Пользователь не является владельцем вещи");
         }
+        item.setId(id);
+        String name = (item.getName() == null || item.getName().isBlank()) ? foundItem.getName() : item.getName();
+        item.setName(name);
+        String description = (item.getDescription() == null || item.getDescription().isBlank()) ? foundItem.getDescription() : item.getDescription();
+        item.setDescription(description);
+        User owner = (item.getOwner() == null) ? foundItem.getOwner() : item.getOwner();
+        Boolean available = (item.getAvailable() == null) ? foundItem.getAvailable() : item.getAvailable();
+        item.setAvailable(available);
+        item.setOwner(owner);
         items.put(id, item);
         return item;
     }
 
     @Override
     public List<Item> search(String text) {
+        text = text.toLowerCase();
         List<Item> foundItems = new ArrayList<>();
+        if (text.isBlank()) {
+            return foundItems;
+        }
         for (Item item : items.values()) {
-            if (text.equals(item.getName()) || text.equals(item.getDescription())) {
+            if (item.getName().toLowerCase().contains(text) || item.getDescription().toLowerCase().contains(text)
+            && item.getAvailable()) {
                 foundItems.add(item);
             }
         }

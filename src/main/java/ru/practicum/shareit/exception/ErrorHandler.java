@@ -28,4 +28,9 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
+    @ExceptionHandler(WrongOwnerException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleWrongOwner(final WrongOwnerException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }
