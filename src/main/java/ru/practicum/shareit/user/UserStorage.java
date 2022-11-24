@@ -1,9 +1,9 @@
 package ru.practicum.shareit.user;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface UserStorage {
-    Collection<User> findAll();
+    List<User> findAll();
 
     User create(User user);
 
