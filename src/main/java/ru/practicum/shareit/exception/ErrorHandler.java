@@ -33,4 +33,10 @@ public class ErrorHandler {
     public ErrorResponse handleWrongOwner(final WrongOwnerException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler(AlreadyExistEmailException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleAlreadyExistEmail(final AlreadyExistEmailException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }

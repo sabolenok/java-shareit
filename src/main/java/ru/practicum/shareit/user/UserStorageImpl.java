@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.exception.AlreadyExistEmailException;
 import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.*;
@@ -73,7 +74,7 @@ public class UserStorageImpl implements UserStorage {
     private void checkEmail(User user) {
         for (User u : users.values()) {
             if (u.getEmail().equals(user.getEmail()) && u.getId() != user.getId()) {
-                throw new RuntimeException("Пользователь с таким email уже существует");
+                throw new AlreadyExistEmailException("Пользователь с таким email уже существует");
             }
         }
     }
