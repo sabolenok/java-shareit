@@ -26,7 +26,7 @@ public class Booking {
     private int itemId;
     @Transient
     private User booker;
-    @Column(name = "user_id")
+    @Column(name = "booker_id")
     private int userId;
     @Enumerated(EnumType.STRING)
     private BookingStatus status;

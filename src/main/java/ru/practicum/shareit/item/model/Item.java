@@ -23,10 +23,10 @@ public class Item {
     @Column(nullable = false)
     @NotBlank(message = "Описание не может быть пустым")
     private String description;
-    @Column(nullable = false)
+    @Column(name = "is_available", nullable = false)
     @NotNull(message = "Статус доступности должен быть указан")
     private Boolean available;
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "owner_id", nullable = false)
     private int userId;
     @Column(name = "request_id", nullable = false)
     private int requestId;
