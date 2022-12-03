@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,7 +26,8 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserDto get(@PathVariable Integer id) {
-        return userMapper.toUserDto(userService.findById(id));
+        Optional<User> user = userService.findById(id);
+        return user.map(userMapper::toUserDto).orElse(null);
     }
 
     @PatchMapping("/{id}")
