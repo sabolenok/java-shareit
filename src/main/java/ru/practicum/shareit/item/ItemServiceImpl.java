@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.WrongOwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -50,6 +51,12 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public Item put(int userId, int id, Item item) {
+        Optional<Item> foundItem = repository.findById(id);
+        if (foundItem.isPresent()) {
+            if (foundItem.get().getUserId() != userId) {
+                throw new WrongOwnerException("Пользователь не является владельцем вещи");
+            }
+        }
         return repository.save(item);
     }
 
