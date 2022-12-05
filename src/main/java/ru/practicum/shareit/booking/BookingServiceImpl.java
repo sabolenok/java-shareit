@@ -14,6 +14,8 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -74,37 +76,84 @@ public class BookingServiceImpl implements BookingService {
     public List<Booking> getByUserId(int userId, State state) {
         switch (state) {
             case ALL:
-                return repository.findByUserId(userId, Sort.by(Sort.Direction.ASC, "endDate"));
+                return repository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "endDate"));
             case CURRENT:
                 return repository.findByUserIdAndStartAfterAndEndBefore(
                         userId,
                         LocalDateTime.now(),
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.ASC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "endDate")
                 );
             case PAST:
                 return repository.findByUserIdAndEndBefore(
                         userId,
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.ASC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "endDate")
                 );
             case FUTURE:
                 return repository.findByUserIdAndStartAfter(
                         userId,
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.ASC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "endDate")
                 );
             case WAITING:
                 return repository.findByUserIdAndStatus(
                         userId,
                         BookingStatus.WAITING,
-                        Sort.by(Sort.Direction.ASC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "endDate")
                 );
             case REJECTED:
                 return repository.findByUserIdAndStatus(
                         userId,
                         BookingStatus.REJECTED,
-                        Sort.by(Sort.Direction.ASC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "endDate")
+                );
+            default:
+                return null;
+        }
+    }
+
+    @Transactional
+    @Override
+    public List<Booking> getByOwnerId(int userId, State state) {
+        List<Item> userItems = itemRepository.findAllByUserId(userId);
+        if (userItems.isEmpty()) {
+            return null;
+        }
+        Set<Integer> itemId = userItems.stream().map(Item::getId).collect(Collectors.toSet());
+        switch (state) {
+            case ALL:
+                return repository.findByItemIdIn(itemId, Sort.by(Sort.Direction.DESC, "endDate"));
+            case CURRENT:
+                return repository.findByItemIdInAndStartAfterAndEndBefore(
+                        itemId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "endDate")
+                );
+            case PAST:
+                return repository.findByItemIdInAndEndBefore(
+                        itemId,
+                        LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "endDate")
+                );
+            case FUTURE:
+                return repository.findByItemIdInAndStartAfter(
+                        itemId,
+                        LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "endDate")
+                );
+            case WAITING:
+                return repository.findByItemIdInAndStatus(
+                        itemId,
+                        BookingStatus.WAITING,
+                        Sort.by(Sort.Direction.DESC, "endDate")
+                );
+            case REJECTED:
+                return repository.findByItemIdInAndStatus(
+                        itemId,
+                        BookingStatus.REJECTED,
+                        Sort.by(Sort.Direction.DESC, "endDate")
                 );
             default:
                 return null;

@@ -10,4 +10,6 @@ public interface BookingService {
     Booking getById(int userId, int id);
 
     List<Booking> getByUserId(int userId, State state);
+
+    List<Booking> getByOwnerId(int userId, State state);
 }

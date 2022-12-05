@@ -8,6 +8,7 @@ import ru.practicum.shareit.user.User;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "items")
@@ -34,4 +35,12 @@ public class Item {
     private User owner;
     @Transient
     private ItemRequest request;
+    @Transient
+    private LocalDateTime startOfLastBooking;
+    @Transient
+    private LocalDateTime endOfLastBooking;
+    @Transient
+    private LocalDateTime startOfNextBooking;
+    @Transient
+    private LocalDateTime endOfNextBooking;
 }
