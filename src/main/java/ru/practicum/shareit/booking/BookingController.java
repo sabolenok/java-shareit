@@ -26,12 +26,11 @@ public class BookingController {
         return bookingMapper.toBookingDto(bookingService.addNewBooking(userId, bookingMapper.toBooking(bookingDto)));
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{bookingId}")
     public BookingDto put(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                          @Valid @RequestBody BookingDto bookingDto,
-                          @PathVariable int id,
-                          @RequestParam boolean approved) {
-        return bookingMapper.toBookingDto(bookingService.put(userId, id, bookingMapper.toBooking(bookingDto), approved));
+                          @PathVariable Integer bookingId,
+                          @RequestParam Boolean approved) {
+        return bookingMapper.toBookingDto(bookingService.put(userId, bookingId, approved));
     }
 
     @GetMapping("/{id}")

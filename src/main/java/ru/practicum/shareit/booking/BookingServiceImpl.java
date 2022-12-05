@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.BookingDateException;
+import ru.practicum.shareit.exception.ItemNotAvailableException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.WrongOwnerException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
@@ -34,26 +37,56 @@ public class BookingServiceImpl implements BookingService {
     public Booking addNewBooking(int userId, Booking booking) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
-            booking.setStatus(BookingStatus.WAITING);
-            return repository.save(booking);
+            Optional<Item> item = itemRepository.findById(booking.getItemId());
+            if (item.isPresent()) {
+                if (!item.get().getAvailable()) {
+                    throw new ItemNotAvailableException("Вещь недоступна для бронирования!");
+                }
+                if (booking.getStart().isAfter(booking.getEnd())) {
+                    throw new BookingDateException("Дата начала бронирования не может быть позже даты его окончания!");
+                }
+                if (booking.getStart().isBefore(LocalDateTime.now())) {
+                    throw new BookingDateException("Дата начала бронирования не может быть в прошлом!");
+                }
+                if (booking.getEnd().isBefore(LocalDateTime.now())) {
+                    throw new BookingDateException("Дата окончания бронирования не может в прошлом!");
+                }
+                booking.setStatus(BookingStatus.WAITING);
+                booking.setBooker(user.get());
+                booking.setUserId(userId);
+                booking.setItem(item.get());
+                return repository.save(booking);
+            } else {
+                throw new NotFoundException("Вещь не найдена!");
+            }
+        } else {
+            throw new NotFoundException("Пользователь не найден");
         }
-        return null;
     }
 
     @Transactional
     @Override
-    public Booking put(int userId, int id, Booking booking, boolean isApproved) {
+    public Booking put(int userId, int id, boolean isApproved) {
+        Optional<User> foundUser = userRepository.findById(userId);
+        if (foundUser.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
+        }
         Optional<Booking> foundBooking = repository.findById(id);
         if (foundBooking.isPresent()) {
-            Optional<Item> foundItem = itemRepository.findByIdAndUserId(foundBooking.get().getItemId(), userId);
-            if (foundItem.isPresent()) {
+            Booking booking = foundBooking.get();
+            Optional<Item> foundItem = itemRepository.findByIdAndUserId(booking.getItemId(), userId);
+            Optional<User> foundOwner = userRepository.findById(booking.getUserId());
+            if (foundItem.isPresent() && foundOwner.isPresent()) {
+                booking.setItem(foundItem.get());
+                booking.setBooker(foundOwner.get());
                 booking.setStatus(isApproved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
                 return repository.save(booking);
             } else {
                 throw new WrongOwnerException("Пользователь не является владельцем вещи");
             }
+        } else {
+            throw new NotFoundException("Бронирование не найдено");
         }
-        return null;
     }
 
     @Transactional(readOnly = true)

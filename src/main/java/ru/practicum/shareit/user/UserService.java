@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.AlreadyExistEmailException;
+import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,30 +30,42 @@ public class UserService {
 
     @Transactional
     public User create(User user) {
-        checkEmail(user);
         return repository.save(user);
     }
 
     @Transactional
     public User put(int id, User user) {
-        checkEmail(user);
+        user.setId(id);
+        Optional<User> previous = repository.findById(id);
+        if (previous.isPresent()) {
+            user.setEmail(
+                    (user.getEmail() == null || user.getEmail().isBlank())
+                            ? previous.get().getEmail()
+                            : user.getEmail()
+            );
+            user.setName(
+                    (user.getName() == null || user.getName().isBlank())
+                            ? previous.get().getName()
+                            : user.getName()
+            );
+        } else {
+            throw new NotFoundException("Пользователь не найден");
+        }
         return repository.save(user);
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> findById(Integer id) {
-        return repository.findById(id);
+    public User findById(Integer id) {
+        Optional<User> user = repository.findById(id);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new NotFoundException("Пользователь не найден");
+        }
     }
 
     @Transactional
     public void deleteUser(Integer id) {
         repository.deleteById(id);
-    }
-
-    private void checkEmail(User user) {
-        User u = repository.findUserByEmail(user.getEmail());
-        if (u.getEmail().equals(user.getEmail()) && u.getId() != user.getId()) {
-                throw new AlreadyExistEmailException("Пользователь с таким email уже существует");
-        }
     }
 }

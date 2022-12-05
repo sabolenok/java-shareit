@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     List<Item> findAllByUserId(Integer userId);
 
-    List<Item> findByNameLikeIgnoreCase(String text);
+    List<Item> findByNameLikeIgnoreCaseAndAvailableOrderById(String text, Boolean available);
+
+    List<Item> findByDescriptionLikeIgnoreCaseAndAvailableOrderById(String text, Boolean available);
 
     Optional<Item> findByIdAndUserId(int id, int userId);
 }

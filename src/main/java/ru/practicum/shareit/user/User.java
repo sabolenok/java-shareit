@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "users")
+@DynamicUpdate
 @Getter
 @Setter
 public class User {
@@ -18,7 +20,7 @@ public class User {
     @Column(nullable = false)
     @NotBlank(message = "Логин не может быть пустым")
     private String name;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @NotBlank(message = "Электронная почта не может быть пустой")
     @Email(message = "Электронная почта не соответствует формату")
     private String email;

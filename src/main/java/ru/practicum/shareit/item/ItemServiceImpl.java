@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.WrongOwnerException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -13,9 +14,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -40,6 +39,7 @@ public class ItemServiceImpl implements ItemService {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
             item.setOwner(user.get());
+            item.setUserId(userId);
             return repository.save(item);
         }
         return null;
@@ -54,8 +54,9 @@ public class ItemServiceImpl implements ItemService {
             setBookingDates(item1);
             setComments(item1);
             return item1;
+        } else {
+            throw new NotFoundException("Вещь не найдена!");
         }
-        return null;
     }
 
     @Transactional(readOnly = true)
@@ -77,6 +78,26 @@ public class ItemServiceImpl implements ItemService {
             if (foundItem.get().getUserId() != userId) {
                 throw new WrongOwnerException("Пользователь не является владельцем вещи");
             }
+            item.setId(id);
+            item.setName(
+                    (item.getName() == null || item.getName().isBlank())
+                            ? foundItem.get().getName()
+                            : item.getName()
+            );
+            item.setDescription(
+                    (item.getDescription() == null || item.getDescription().isBlank())
+                            ? foundItem.get().getDescription()
+                            : item.getDescription()
+            );
+            item.setUserId(userId);
+            item.setOwner(userRepository.findById(userId).get());
+            item.setAvailable(
+                    (item.getAvailable() == null)
+                            ? foundItem.get().getAvailable()
+                            : item.getAvailable()
+            );
+        } else {
+            throw new NotFoundException("Вещь не найдена!");
         }
         setBookingDates(item);
         setComments(item);
@@ -85,11 +106,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Item> search(String text) {
+    public Set<Item> search(String text) {
         if (text.isBlank()) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
-        List<Item> items = repository.findByNameLikeIgnoreCase(text.toLowerCase());
+        List<Item> itemsByName = repository.findByNameLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
+        List<Item> itemsByDescr = repository.findByDescriptionLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
+        Set<Item> items = new HashSet<>();
+        items.addAll(itemsByDescr);
+        items.addAll(itemsByName);
         for (Item item : items) {
             setBookingDates(item);
             setComments(item);
@@ -111,14 +136,18 @@ public class ItemServiceImpl implements ItemService {
 
     private void setBookingDates(Item item) {
         Booking last = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-        item.setStartOfLastBooking(last.getStart());
-        item.setEndOfLastBooking(last.getEnd());
+        if (last != null) {
+            item.setStartOfLastBooking(last.getStart());
+            item.setEndOfLastBooking(last.getEnd());
+        }
         Booking next = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
-        item.setStartOfNextBooking(next.getStart());
-        item.setEndOfNextBooking(next.getEnd());
+        if (next != null) {
+            item.setStartOfNextBooking(next.getStart());
+            item.setEndOfNextBooking(next.getEnd());
+        }
     }
 
     private void setComments(Item item) {
-        item.setComments(commentRepository.findAllByItemIdIs(item.getId()));
+        item.setComments(commentRepository.findByItemId(item.getId()));
     }
 }
