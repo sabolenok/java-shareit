@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.WrongOwnerException;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -30,6 +31,9 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private final BookingRepository bookingRepository;
 
+    @Autowired
+    private final CommentRepository commentRepository;
+
     @Transactional
     @Override
     public Item addNewItem(int userId, Item item) {
@@ -48,6 +52,7 @@ public class ItemServiceImpl implements ItemService {
         if (item.isPresent()) {
             Item item1 = item.get();
             setBookingDates(item1);
+            setComments(item1);
             return item1;
         }
         return null;
@@ -59,6 +64,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = repository.findAllByUserId(userId);
         for (Item item : items) {
             setBookingDates(item);
+            setComments(item);
         }
         return items;
     }
@@ -73,6 +79,7 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         setBookingDates(item);
+        setComments(item);
         return repository.save(item);
     }
 
@@ -85,8 +92,21 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = repository.findByNameLikeIgnoreCase(text.toLowerCase());
         for (Item item : items) {
             setBookingDates(item);
+            setComments(item);
         }
         return items;
+    }
+
+    @Transactional
+    @Override
+    public Comment addComment(int userId, int itemId, Comment comment) {
+        Optional<Item> foundItem = repository.findById(itemId);
+        if (foundItem.isPresent()) {
+            if (foundItem.get().getUserId() != userId) {
+                throw new WrongOwnerException("Пользователь не является владельцем вещи");
+            }
+        }
+        return commentRepository.save(comment);
     }
 
     private void setBookingDates(Item item) {
@@ -96,5 +116,9 @@ public class ItemServiceImpl implements ItemService {
         Booking next = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
         item.setStartOfNextBooking(next.getStart());
         item.setEndOfNextBooking(next.getEnd());
+    }
+
+    private void setComments(Item item) {
+        item.setComments(commentRepository.findAllByItemIdIs(item.getId()));
     }
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ItemDto {
@@ -18,5 +19,6 @@ public class ItemDto {
     private LocalDateTime endOfLastBooking;
     private LocalDateTime startOfNextBooking;
     private LocalDateTime endOfNextBooking;
+    private List<CommentDto> comments;
     private int id;
 }

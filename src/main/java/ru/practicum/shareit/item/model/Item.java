@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "items")
@@ -43,4 +44,6 @@ public class Item {
     private LocalDateTime startOfNextBooking;
     @Transient
     private LocalDateTime endOfNextBooking;
+    @Transient
+    List<Comment> comments;
 }
