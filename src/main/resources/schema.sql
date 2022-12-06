@@ -41,6 +41,6 @@ CREATE TABLE IF NOT EXISTS comments (
     item_id BIGINT,
     author_id BIGINT,
     created TIMESTAMP WITHOUT TIME ZONE,
-    CONSTRAINT fk_requests_to_items FOREIGN KEY(item_id) REFERENCES items(id),
-    CONSTRAINT fk_requests_to_users FOREIGN KEY(author_id) REFERENCES users(id)
+    CONSTRAINT fk_comments_to_items FOREIGN KEY(item_id) REFERENCES items(id),
+    CONSTRAINT fk_comments_to_users FOREIGN KEY(author_id) REFERENCES users(id)
 );

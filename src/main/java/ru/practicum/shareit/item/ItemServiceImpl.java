@@ -7,7 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UserNotBookedItemException;
 import ru.practicum.shareit.exception.WrongOwnerException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -16,6 +18,7 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -119,32 +122,52 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public Set<Item> search(int userId, String text) {
+    public List<Item> search(int userId, String text) {
         if (text.isBlank()) {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
         List<Item> itemsByName = repository.findByNameLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
         List<Item> itemsByDescr = repository.findByDescriptionLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
         Set<Item> items = new HashSet<>();
         items.addAll(itemsByName);
         items.addAll(itemsByDescr);
-        for (Item item : items) {
+        List<Item> sortedItems = items.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
+        for (Item item : sortedItems) {
             if (item.getUserId() == userId) {
                 setBookingDates(item);
             }
             setComments(item);
         }
-        return items;
+        return sortedItems;
     }
 
     @Transactional
     @Override
     public Comment addComment(int userId, int itemId, Comment comment) {
+        List<Booking> bookings = bookingRepository.findByItemIdAndUserIdAndEndBeforeAndStatus(
+                itemId,
+                userId,
+                LocalDateTime.now(),
+                BookingStatus.APPROVED
+        );
+        if (bookings == null || bookings.isEmpty()) {
+            throw new UserNotBookedItemException("У пользователя не было бронирований этой вещи");
+        }
         Optional<Item> foundItem = repository.findById(itemId);
-        if (foundItem.isPresent()) {
-            if (foundItem.get().getUserId() != userId) {
-                throw new WrongOwnerException("Пользователь не является владельцем вещи");
-            }
+        if (foundItem.isEmpty()) {
+            throw new NotFoundException("Вещь не найдена");
+        } else {
+            comment.setItemId(itemId);
+            comment.setItem(foundItem.get());
+        }
+        Optional<User> foundUser = userRepository.findById(userId);
+        if (foundUser.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
+        } else {
+            User user = foundUser.get();
+            comment.setAuthorId(userId);
+            comment.setAuthorName(user.getName());
+            comment.setCreated(LocalDateTime.now());
         }
         return commentRepository.save(comment);
     }
@@ -161,6 +184,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void setComments(Item item) {
-        item.setComments(commentRepository.findByItemId(item.getId()));
+        List<Comment> comments = commentRepository.findByItemId(item.getId());
+        for (Comment c : comments) {
+            Optional<User> foundUser = userRepository.findById(c.getAuthorId());
+            foundUser.ifPresent(user -> c.setAuthorName(user.getName()));
+        }
+        item.setComments(comments);
     }
 }

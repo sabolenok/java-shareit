@@ -13,7 +13,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByUserId(int bookerId, Sort sort);
 
-    List<Booking> findByUserIdAndStartAfterAndEndBefore(int bookerId, LocalDateTime start, LocalDateTime end, Sort sort);
+    List<Booking> findByUserIdAndStartBeforeAndEndAfter(int bookerId, LocalDateTime start, LocalDateTime end, Sort sort);
 
     List<Booking> findByUserIdAndStartAfter(int bookerId, LocalDateTime start, Sort sort);
 
@@ -21,7 +21,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByItemIdIn(Collection<Integer> itemId, Sort sort);
 
-    List<Booking> findByItemIdInAndStartAfterAndEndBefore(Collection<Integer> itemId, LocalDateTime start, LocalDateTime end, Sort sort);
+    List<Booking> findByItemIdInAndStartBeforeAndEndAfter(Collection<Integer> itemId, LocalDateTime start, LocalDateTime end, Sort sort);
 
     List<Booking> findByItemIdInAndEndBefore(Collection<Integer> itemId, LocalDateTime end, Sort sort);
 
@@ -34,5 +34,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     Booking findFirstByItemIdAndStartAfterOrderByStartAsc(int itemId, LocalDateTime start);
 
     List<Booking> findByItemIdIsAndStartAfterAndEndBeforeAndStatus(int itemId, LocalDateTime start, LocalDateTime end, BookingStatus status);
+
+    List<Booking> findByItemIdAndUserIdAndEndBeforeAndStatus(int itemId, int userId, LocalDateTime end, BookingStatus status);
 
 }

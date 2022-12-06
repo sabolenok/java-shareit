@@ -142,7 +142,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = repository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "end"));
                 break;
             case CURRENT:
-                bookings = repository.findByUserIdAndStartAfterAndEndBefore(
+                bookings = repository.findByUserIdAndStartBeforeAndEndAfter(
                         userId,
                         LocalDateTime.now(),
                         LocalDateTime.now(),
@@ -211,7 +211,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = repository.findByItemIdIn(itemId, Sort.by(Sort.Direction.DESC, "end"));
                 break;
             case CURRENT:
-                bookings = repository.findByItemIdInAndStartAfterAndEndBefore(
+                bookings = repository.findByItemIdInAndStartBeforeAndEndAfter(
                         itemId,
                         LocalDateTime.now(),
                         LocalDateTime.now(),
