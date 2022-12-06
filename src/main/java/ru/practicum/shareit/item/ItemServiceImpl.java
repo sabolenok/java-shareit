@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.WrongOwnerException;
@@ -33,6 +34,9 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private final CommentRepository commentRepository;
 
+    @Autowired
+    private final BookingMapper bookingMapper;
+
     @Transactional
     @Override
     public Item addNewItem(int userId, Item item) {
@@ -47,13 +51,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public Item getById(int id) {
-        Optional<Item> item = repository.findById(id);
-        if (item.isPresent()) {
-            Item item1 = item.get();
-            setBookingDates(item1);
-            setComments(item1);
-            return item1;
+    public Item getById(int userId, int id) {
+        Optional<Item> foundItem = repository.findById(id);
+        if (foundItem.isPresent()) {
+            Item item = foundItem.get();
+            if (item.getUserId() == userId) {
+                setBookingDates(item);
+            }
+            setComments(item);
+            return item;
         } else {
             throw new NotFoundException("Вещь не найдена!");
         }
@@ -62,9 +68,11 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     @Override
     public List<Item> getAll(int userId) {
-        List<Item> items = repository.findAllByUserId(userId);
+        List<Item> items = repository.findAllByUserIdOrderById(userId);
         for (Item item : items) {
-            setBookingDates(item);
+            if (item.getUserId() == userId) {
+                setBookingDates(item);
+            }
             setComments(item);
         }
         return items;
@@ -73,6 +81,11 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public Item put(int userId, int id, Item item) {
+        Optional<User> foundUser = userRepository.findById(userId);
+        if (foundUser.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден!");
+        }
+        User user = foundUser.get();
         Optional<Item> foundItem = repository.findById(id);
         if (foundItem.isPresent()) {
             if (foundItem.get().getUserId() != userId) {
@@ -90,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
                             : item.getDescription()
             );
             item.setUserId(userId);
-            item.setOwner(userRepository.findById(userId).get());
+            item.setOwner(user);
             item.setAvailable(
                     (item.getAvailable() == null)
                             ? foundItem.get().getAvailable()
@@ -106,17 +119,19 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public Set<Item> search(String text) {
+    public Set<Item> search(int userId, String text) {
         if (text.isBlank()) {
             return new HashSet<>();
         }
         List<Item> itemsByName = repository.findByNameLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
         List<Item> itemsByDescr = repository.findByDescriptionLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
         Set<Item> items = new HashSet<>();
-        items.addAll(itemsByDescr);
         items.addAll(itemsByName);
+        items.addAll(itemsByDescr);
         for (Item item : items) {
-            setBookingDates(item);
+            if (item.getUserId() == userId) {
+                setBookingDates(item);
+            }
             setComments(item);
         }
         return items;
@@ -135,15 +150,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void setBookingDates(Item item) {
-        Booking last = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-        if (last != null) {
-            item.setStartOfLastBooking(last.getStart());
-            item.setEndOfLastBooking(last.getEnd());
+        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+        if (lastBooking != null) {
+            item.setLastBooking(bookingMapper.toBookingInItem(lastBooking));
         }
-        Booking next = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
-        if (next != null) {
-            item.setStartOfNextBooking(next.getStart());
-            item.setEndOfNextBooking(next.getEnd());
+        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
+        if (nextBooking != null) {
+            item.setNextBooking(bookingMapper.toBookingInItem(nextBooking));
         }
     }
 

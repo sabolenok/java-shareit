@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.BookingDateException;
-import ru.practicum.shareit.exception.ItemNotAvailableException;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.WrongOwnerException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -40,6 +37,18 @@ public class BookingServiceImpl implements BookingService {
             Optional<Item> item = itemRepository.findById(booking.getItemId());
             if (item.isPresent()) {
                 if (!item.get().getAvailable()) {
+                    throw new ItemNotAvailableException("Вещь недоступна для бронирования!");
+                }
+                List<Booking> bookings = repository.findByItemIdIsAndStartAfterAndEndBeforeAndStatus(
+                        item.get().getId(),
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        BookingStatus.APPROVED
+                );
+                if (item.get().getUserId() == userId) {
+                    throw new NotFoundException("Вещь не найдена!");
+                }
+                if (!bookings.isEmpty()) {
                     throw new ItemNotAvailableException("Вещь недоступна для бронирования!");
                 }
                 if (booking.getStart().isAfter(booking.getEnd())) {
@@ -74,11 +83,14 @@ public class BookingServiceImpl implements BookingService {
         Optional<Booking> foundBooking = repository.findById(id);
         if (foundBooking.isPresent()) {
             Booking booking = foundBooking.get();
+            if (!booking.getStatus().equals(BookingStatus.WAITING)) {
+                throw new BookingStatusException("Текущий статус бронирования не позволяет вносить изменения");
+            }
             Optional<Item> foundItem = itemRepository.findByIdAndUserId(booking.getItemId(), userId);
-            Optional<User> foundOwner = userRepository.findById(booking.getUserId());
-            if (foundItem.isPresent() && foundOwner.isPresent()) {
+            Optional<User> foundBooker = userRepository.findById(booking.getUserId());
+            if (foundItem.isPresent() && foundBooker.isPresent()) {
                 booking.setItem(foundItem.get());
-                booking.setBooker(foundOwner.get());
+                booking.setBooker(foundBooker.get());
                 booking.setStatus(isApproved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
                 return repository.save(booking);
             } else {
@@ -94,102 +106,157 @@ public class BookingServiceImpl implements BookingService {
     public Booking getById(int userId, int id) {
         Optional<Booking> foundBooking = repository.findById(id);
         if (foundBooking.isPresent()) {
-            Optional<Item> foundItem = itemRepository.findByIdAndUserId(foundBooking.get().getItemId(), userId);
-            if (foundItem.isPresent() || foundBooking.get().getUserId() == userId) {
-                return foundBooking.get();
+            Booking booking = foundBooking.get();
+            Optional<Item> foundItem = itemRepository.findById(booking.getItemId());
+            Optional<User> foundBooker = userRepository.findById(booking.getUserId());
+            if (foundBooker.isPresent() && foundItem.isPresent()) {
+                if (foundItem.get().getUserId() == userId || booking.getUserId() == userId) {
+                    booking.setItem(foundItem.get());
+                    booking.setBooker(foundBooker.get());
+                    return booking;
+                } else {
+                    throw new WrongOwnerException("У пользователя недостаточно прав для просмотра данного бронирования");
+                }
             } else {
-                throw new WrongOwnerException("У пользователя недостаточно прав для просмотра данного бронирования");
+                throw new NotFoundException("Вещь не найдена");
             }
+        } else {
+            throw new NotFoundException("Бронирование не найдено");
         }
-        return null;
     }
 
     @Transactional
     @Override
     public List<Booking> getByUserId(int userId, State state) {
+
+        Optional<User> foundBooker = userRepository.findById(userId);
+        if (foundBooker.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+
+        User booker = foundBooker.get();
+        List<Booking> bookings;
+
         switch (state) {
             case ALL:
-                return repository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "endDate"));
+                bookings = repository.findByUserId(userId, Sort.by(Sort.Direction.DESC, "end"));
+                break;
             case CURRENT:
-                return repository.findByUserIdAndStartAfterAndEndBefore(
+                bookings = repository.findByUserIdAndStartAfterAndEndBefore(
                         userId,
                         LocalDateTime.now(),
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case PAST:
-                return repository.findByUserIdAndEndBefore(
+                bookings = repository.findByUserIdAndEndBefore(
                         userId,
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case FUTURE:
-                return repository.findByUserIdAndStartAfter(
+                bookings = repository.findByUserIdAndStartAfter(
                         userId,
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case WAITING:
-                return repository.findByUserIdAndStatus(
+                bookings = repository.findByUserIdAndStatus(
                         userId,
                         BookingStatus.WAITING,
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case REJECTED:
-                return repository.findByUserIdAndStatus(
+                bookings = repository.findByUserIdAndStatus(
                         userId,
                         BookingStatus.REJECTED,
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             default:
-                return null;
+                throw new UnsupportedStateException("Unknown state: " + state);
         }
+
+        for (Booking booking : bookings) {
+            Optional<Item> foundItem = itemRepository.findById(booking.getItemId());
+            foundItem.ifPresent(booking::setItem);
+            booking.setBooker(booker);
+        }
+
+        return bookings;
     }
 
     @Transactional
     @Override
     public List<Booking> getByOwnerId(int userId, State state) {
-        List<Item> userItems = itemRepository.findAllByUserId(userId);
-        if (userItems.isEmpty()) {
-            return null;
+        Optional<User> foundOwner = userRepository.findById(userId);
+        if (foundOwner.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
         }
+
+        List<Item> userItems = itemRepository.findAllByUserIdOrderById(userId);
+        if (userItems.isEmpty()) {
+            throw new NotFoundException("У пользователь не найдено вещей");
+        }
+
         Set<Integer> itemId = userItems.stream().map(Item::getId).collect(Collectors.toSet());
+        List<Booking> bookings;
+
         switch (state) {
             case ALL:
-                return repository.findByItemIdIn(itemId, Sort.by(Sort.Direction.DESC, "endDate"));
+                bookings = repository.findByItemIdIn(itemId, Sort.by(Sort.Direction.DESC, "end"));
+                break;
             case CURRENT:
-                return repository.findByItemIdInAndStartAfterAndEndBefore(
+                bookings = repository.findByItemIdInAndStartAfterAndEndBefore(
                         itemId,
                         LocalDateTime.now(),
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case PAST:
-                return repository.findByItemIdInAndEndBefore(
+                bookings = repository.findByItemIdInAndEndBefore(
                         itemId,
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case FUTURE:
-                return repository.findByItemIdInAndStartAfter(
+                bookings = repository.findByItemIdInAndStartAfter(
                         itemId,
                         LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case WAITING:
-                return repository.findByItemIdInAndStatus(
+                bookings = repository.findByItemIdInAndStatus(
                         itemId,
                         BookingStatus.WAITING,
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             case REJECTED:
-                return repository.findByItemIdInAndStatus(
+                bookings = repository.findByItemIdInAndStatus(
                         itemId,
                         BookingStatus.REJECTED,
-                        Sort.by(Sort.Direction.DESC, "endDate")
+                        Sort.by(Sort.Direction.DESC, "end")
                 );
+                break;
             default:
-                return null;
+                throw new UnsupportedStateException("Unknown state: " + state);
         }
+
+        for (Booking booking : bookings) {
+            Optional<Item> foundItem = itemRepository.findById(booking.getItemId());
+            foundItem.ifPresent(booking::setItem);
+            Optional<User> foundBooker = userRepository.findById(booking.getUserId());
+            foundBooker.ifPresent(booking::setBooker);
+        }
+
+        return bookings;
     }
 }

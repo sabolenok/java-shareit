@@ -2,13 +2,13 @@ package ru.practicum.shareit.item.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.practicum.shareit.booking.dto.BookingInItem;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -37,13 +37,9 @@ public class Item {
     @Transient
     private ItemRequest request;
     @Transient
-    private LocalDateTime startOfLastBooking;
+    private BookingInItem lastBooking;
     @Transient
-    private LocalDateTime endOfLastBooking;
-    @Transient
-    private LocalDateTime startOfNextBooking;
-    @Transient
-    private LocalDateTime endOfNextBooking;
+    private BookingInItem nextBooking;
     @Transient
     List<Comment> comments;
 }

@@ -9,13 +9,13 @@ import java.util.Set;
 public interface ItemService {
     Item addNewItem(int userId, Item item);
 
-    Item getById(int id);
+    Item getById(int userId, int id);
 
     List<Item> getAll(int userId);
 
     Item put(int userId, int id, Item item);
 
-    Set<Item> search(String text);
+    Set<Item> search(int userId, String text);
 
     Comment addComment(int userId, int itemId, Comment comment);
 }

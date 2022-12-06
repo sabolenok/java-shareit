@@ -29,7 +29,7 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ItemDto get(@RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer id) {
-        return itemMapper.toItemDto(itemService.getById(id));
+        return itemMapper.toItemDto(itemService.getById(userId, id));
     }
 
     @GetMapping
@@ -49,7 +49,7 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> searchItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                     @RequestParam String text) {
-        return itemService.search(text)
+        return itemService.search(userId, text)
                 .stream()
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
