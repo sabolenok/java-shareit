@@ -6,7 +6,13 @@ import ru.practicum.shareit.booking.dto.BookingInItem;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
-import javax.persistence.*;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -41,5 +47,5 @@ public class Item {
     @Transient
     private BookingInItem nextBooking;
     @Transient
-    List<Comment> comments;
+    private List<Comment> comments;
 }

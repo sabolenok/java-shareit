@@ -2,9 +2,16 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.exception.UnsupportedStateException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -42,12 +49,7 @@ public class BookingController {
     @GetMapping()
     public List<BookingDto> getByUser(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                       @RequestParam(defaultValue = "ALL") String state) {
-        try {
-            State.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            throw new UnsupportedStateException("Unknown state: " + state);
-        }
-        return bookingService.getByUserId(userId, State.valueOf(state))
+        return bookingService.getByUserId(userId, state)
                 .stream()
                 .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());
@@ -56,12 +58,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getByOwner(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                        @RequestParam(defaultValue = "ALL") String state) {
-        try {
-            State.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            throw new UnsupportedStateException("Unknown state: " + state);
-        }
-        return bookingService.getByOwnerId(userId, State.valueOf(state))
+        return bookingService.getByOwnerId(userId, state)
                 .stream()
                 .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());

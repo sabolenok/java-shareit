@@ -127,7 +127,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public List<Booking> getByUserId(int userId, State state) {
+    public List<Booking> getByUserId(int userId, String requestedState) {
+
+        try {
+            State.valueOf(requestedState);
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedStateException("Unknown state: " + requestedState);
+        }
+
+        State state = State.valueOf(requestedState);
 
         Optional<User> foundBooker = userRepository.findById(userId);
         if (foundBooker.isEmpty()) {
@@ -192,7 +200,16 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public List<Booking> getByOwnerId(int userId, State state) {
+    public List<Booking> getByOwnerId(int userId, String requestedState) {
+
+        try {
+            State.valueOf(requestedState);
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedStateException("Unknown state: " + requestedState);
+        }
+
+        State state = State.valueOf(requestedState);
+
         Optional<User> foundOwner = userRepository.findById(userId);
         if (foundOwner.isEmpty()) {
             throw new NotFoundException("Пользователь не найден");

@@ -17,7 +17,12 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,9 +64,9 @@ public class ItemServiceImpl implements ItemService {
         if (foundItem.isPresent()) {
             Item item = foundItem.get();
             if (item.getUserId() == userId) {
-                setBookingDates(item);
+                setBookingDates(item, null);
             }
-            setComments(item);
+            setComments(item, null);
             return item;
         } else {
             throw new NotFoundException("Вещь не найдена!");
@@ -72,12 +77,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<Item> getAll(int userId) {
         List<Item> items = repository.findAllByUserIdOrderById(userId);
-        for (Item item : items) {
-            if (item.getUserId() == userId) {
-                setBookingDates(item);
-            }
-            setComments(item);
-        }
+        fillCommentsAndBookingsInItems(userId, items);
         return items;
     }
 
@@ -115,8 +115,8 @@ public class ItemServiceImpl implements ItemService {
         } else {
             throw new NotFoundException("Вещь не найдена!");
         }
-        setBookingDates(item);
-        setComments(item);
+        setBookingDates(item, null);
+        setComments(item, null);
         return repository.save(item);
     }
 
@@ -132,12 +132,7 @@ public class ItemServiceImpl implements ItemService {
         items.addAll(itemsByName);
         items.addAll(itemsByDescr);
         List<Item> sortedItems = items.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
-        for (Item item : sortedItems) {
-            if (item.getUserId() == userId) {
-                setBookingDates(item);
-            }
-            setComments(item);
-        }
+        fillCommentsAndBookingsInItems(userId, sortedItems);
         return sortedItems;
     }
 
@@ -172,23 +167,64 @@ public class ItemServiceImpl implements ItemService {
         return commentRepository.save(comment);
     }
 
-    private void setBookingDates(Item item) {
-        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-        if (lastBooking != null) {
-            item.setLastBooking(bookingMapper.toBookingInItem(lastBooking));
-        }
-        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
-        if (nextBooking != null) {
-            item.setNextBooking(bookingMapper.toBookingInItem(nextBooking));
+    private void fillCommentsAndBookingsInItems(int userId, List<Item> items) {
+        List<Comment> comments = getAllComments();
+        List<Booking> bookings = getAllBookings();
+        for (Item item : items) {
+            if (item.getUserId() == userId) {
+                setBookingDates(item, bookings);
+            }
+            setComments(item, comments);
         }
     }
 
-    private void setComments(Item item) {
-        List<Comment> comments = commentRepository.findByItemId(item.getId());
+    private void setBookingDates(Item item, List<Booking> allBookings) {
+        if (allBookings == null) {
+            Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+            if (lastBooking != null) {
+                item.setLastBooking(bookingMapper.toBookingInItem(lastBooking));
+            }
+            Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
+            if (nextBooking != null) {
+                item.setNextBooking(bookingMapper.toBookingInItem(nextBooking));
+            }
+        } else {
+            List<Booking> lastBookings = allBookings.stream()
+                            .filter(x -> x.getItemId() == item.getId())
+                            .filter(x -> x.getStart().isBefore(LocalDateTime.now()))
+                            .collect(Collectors.toList());
+            if (!lastBookings.isEmpty()) {
+                item.setLastBooking(bookingMapper.toBookingInItem(lastBookings.get(0)));
+            }
+            List<Booking> nextBookings = allBookings.stream()
+                    .filter(x -> x.getItemId() == item.getId())
+                    .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
+                    .collect(Collectors.toList());
+            if (!nextBookings.isEmpty()) {
+                item.setNextBooking(bookingMapper.toBookingInItem(nextBookings.get(nextBookings.size()-1)));
+            }
+        }
+    }
+
+    private void setComments(Item item, List<Comment> allComments) {
+        List<Comment> comments;
+        if (allComments == null) {
+            comments = commentRepository.findByItemId(item.getId());
+        } else {
+            comments = allComments.stream().filter(x -> x.getItemId() == item.getId()).collect(Collectors.toList());
+        }
         for (Comment c : comments) {
             Optional<User> foundUser = userRepository.findById(c.getAuthorId());
             foundUser.ifPresent(user -> c.setAuthorName(user.getName()));
         }
         item.setComments(comments);
+    }
+
+    private List<Comment> getAllComments() {
+        return commentRepository.findAll();
+    }
+
+    private List<Booking> getAllBookings() {
+        return bookingRepository.findAllByStatusOrderByStartDesc(BookingStatus.APPROVED);
     }
 }
