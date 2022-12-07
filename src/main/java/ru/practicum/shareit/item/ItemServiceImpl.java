@@ -201,7 +201,7 @@ public class ItemServiceImpl implements ItemService {
                     .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
                     .collect(Collectors.toList());
             if (!nextBookings.isEmpty()) {
-                item.setNextBooking(bookingMapper.toBookingInItem(nextBookings.get(nextBookings.size()-1)));
+                item.setNextBooking(bookingMapper.toBookingInItem(nextBookings.get(nextBookings.size() - 1)));
             }
         }
     }
