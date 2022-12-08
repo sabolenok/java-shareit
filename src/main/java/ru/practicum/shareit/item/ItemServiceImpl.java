@@ -17,12 +17,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Comparator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,7 +61,8 @@ public class ItemServiceImpl implements ItemService {
             if (item.getUserId() == userId) {
                 setBookingDates(item, null);
             }
-            setComments(item, null);
+            Map<Integer, User> users = getAllUsers();
+            setComments(item, users, null);
             return item;
         } else {
             throw new NotFoundException("Вещь не найдена!");
@@ -116,7 +112,8 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException("Вещь не найдена!");
         }
         setBookingDates(item, null);
-        setComments(item, null);
+        Map<Integer, User> users = getAllUsers();
+        setComments(item, users, null);
         return repository.save(item);
     }
 
@@ -170,11 +167,12 @@ public class ItemServiceImpl implements ItemService {
     private void fillCommentsAndBookingsInItems(int userId, List<Item> items) {
         List<Comment> comments = getAllComments();
         List<Booking> bookings = getAllBookings();
+        Map<Integer, User> users = getAllUsers();
         for (Item item : items) {
             if (item.getUserId() == userId) {
                 setBookingDates(item, bookings);
             }
-            setComments(item, comments);
+            setComments(item, users, comments);
         }
     }
 
@@ -206,7 +204,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private void setComments(Item item, List<Comment> allComments) {
+    private void setComments(Item item, Map<Integer, User> users, List<Comment> allComments) {
         List<Comment> comments;
         if (allComments == null) {
             comments = commentRepository.findByItemId(item.getId());
@@ -214,8 +212,9 @@ public class ItemServiceImpl implements ItemService {
             comments = allComments.stream().filter(x -> x.getItemId() == item.getId()).collect(Collectors.toList());
         }
         for (Comment c : comments) {
-            Optional<User> foundUser = userRepository.findById(c.getAuthorId());
-            foundUser.ifPresent(user -> c.setAuthorName(user.getName()));
+            if (users.containsKey(c.getAuthorId())) {
+                c.setAuthorName(users.get(c.getAuthorId()).getName());
+            }
         }
         item.setComments(comments);
     }
@@ -226,5 +225,13 @@ public class ItemServiceImpl implements ItemService {
 
     private List<Booking> getAllBookings() {
         return bookingRepository.findAllByStatusOrderByStartDesc(BookingStatus.APPROVED);
+    }
+
+    private Map<Integer, User> getAllUsers() {
+        Map<Integer, User> foundUsers = new HashMap<>();
+        for (User u : userRepository.findAll()) {
+            foundUsers.put(u.getId(), u);
+        }
+        return foundUsers;
     }
 }
