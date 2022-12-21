@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/requests")
@@ -24,5 +26,13 @@ public class ItemRequestController {
         return itemRequestMapper.toItemRequestDto(
                 itemRequestService.addNewItemRequest(userId, itemRequestMapper.toItemRequest(itemRequestDto))
         );
+    }
+
+    @GetMapping
+    public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemRequestService.getAll(userId)
+                .stream()
+                .map(itemRequestMapper::toItemRequestDto)
+                .collect(Collectors.toList());
     }
 }

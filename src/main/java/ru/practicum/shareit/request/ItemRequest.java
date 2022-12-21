@@ -2,11 +2,13 @@ package ru.practicum.shareit.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.practicum.shareit.item.dto.ItemInItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "requests")
@@ -24,4 +26,6 @@ public class ItemRequest {
     @Column(name = "requestor_id", nullable = false)
     private int requestorId;
     private LocalDateTime created;
+    @Transient
+    private List<ItemInItemRequest> items;
 }
