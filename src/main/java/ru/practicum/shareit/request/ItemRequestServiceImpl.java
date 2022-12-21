@@ -51,28 +51,51 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (foundUser.isEmpty()) {
             throw new NotFoundException("Пользователь не найден!");
         }
+        List<Item> allItems = getAllItems();
         List<ItemRequest> itemRequests = repository.findAllByRequestorIdOrderByCreated(userId);
-        fillInItemInformation(itemRequests);
+        for (ItemRequest itemRequest : itemRequests) {
+            fillInItemInformation(itemRequest, allItems);
+        }
         return itemRequests;
     }
 
-    private void fillInItemInformation(List<ItemRequest> itemRequests) {
-        List<Item> allItems = itemRepository.findAll();
-
-        for (ItemRequest request : itemRequests) {
-            List<Item> items = allItems.stream().filter(x -> x.getRequestId() == request.getId()).collect(Collectors.toList());
-            List<ItemInItemRequest> shortItems = new ArrayList<>();
-            for (Item item : items) {
-                ItemInItemRequest shortItem = new ItemInItemRequest();
-                shortItem.setId(item.getId());
-                shortItem.setName(item.getName());
-                shortItem.setUserId(item.getUserId());
-                shortItem.setDescription(item.getDescription());
-                shortItem.setAvailable(item.getAvailable());
-                shortItem.setRequestId(item.getRequestId());
-                shortItems.add(shortItem);
-            }
-            request.setItems(shortItems);
+    @Override
+    @Transactional(readOnly = true)
+    public ItemRequest getById(int userId, int id) {
+        Optional<User> foundUser = userRepository.findById(userId);
+        if (foundUser.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден!");
         }
+        Optional<ItemRequest> foundItemRequest = repository.findById(id);
+        if (foundItemRequest.isPresent()) {
+            ItemRequest itemRequest = foundItemRequest.get();
+            List<Item> allItems = getAllItems();
+            fillInItemInformation(itemRequest, allItems);
+            return itemRequest;
+        } else {
+            throw new NotFoundException("Запрос не найден!");
+        }
+    }
+
+    private List<Item> getAllItems() {
+        return itemRepository.findAll();
+    }
+
+    private void fillInItemInformation(ItemRequest itemRequest, List<Item> allItems) {
+        List<Item> items = allItems.stream()
+                .filter(x -> x.getRequestId() == itemRequest.getId())
+                .collect(Collectors.toList());
+        List<ItemInItemRequest> shortItems = new ArrayList<>();
+        for (Item item : items) {
+            ItemInItemRequest shortItem = new ItemInItemRequest();
+            shortItem.setId(item.getId());
+            shortItem.setName(item.getName());
+            shortItem.setUserId(item.getUserId());
+            shortItem.setDescription(item.getDescription());
+            shortItem.setAvailable(item.getAvailable());
+            shortItem.setRequestId(item.getRequestId());
+            shortItems.add(shortItem);
+        }
+        itemRequest.setItems(shortItems);
     }
 }

@@ -35,4 +35,9 @@ public class ItemRequestController {
                 .map(itemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("/{id}")
+    public ItemRequestDto get(@RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer id) {
+        return itemRequestMapper.toItemRequestDto(itemRequestService.getById(userId, id));
+    }
 }

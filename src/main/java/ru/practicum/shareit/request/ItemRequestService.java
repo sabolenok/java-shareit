@@ -8,4 +8,6 @@ public interface ItemRequestService {
 
     List<ItemRequest> getAll(int userId);
 
+    ItemRequest getById(int userId, int id);
+
 }
