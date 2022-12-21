@@ -13,6 +13,8 @@ import ru.practicum.shareit.exception.UserNotBookedItemException;
 import ru.practicum.shareit.exception.WrongOwnerException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -40,6 +42,9 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private final BookingMapper bookingMapper;
 
+    @Autowired
+    private final ItemRequestRepository itemRequestRepository;
+
     @Transactional
     @Override
     public Item addNewItem(int userId, Item item) {
@@ -49,6 +54,8 @@ public class ItemServiceImpl implements ItemService {
             item.setUserId(userId);
             return repository.save(item);
         }
+        Optional<ItemRequest> itemRequest = itemRequestRepository.findById(item.getRequestId());
+        itemRequest.ifPresent(item::setRequest);
         return null;
     }
 
