@@ -2,6 +2,8 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -75,6 +77,20 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         } else {
             throw new NotFoundException("Запрос не найден!");
         }
+    }
+
+    @Override
+    public Page<ItemRequest> getAllWithPagination(int userId, int from, int size) {
+        Optional<User> foundUser = userRepository.findById(userId);
+        if (foundUser.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден!");
+        }
+        List<Item> allItems = getAllItems();
+        Page<ItemRequest> itemRequests = repository.findAllByRequestorIdNotOrderByCreated(userId, PageRequest.of(from, size));
+        for (ItemRequest itemRequest : itemRequests) {
+            fillInItemInformation(itemRequest, allItems);
+        }
+        return itemRequests;
     }
 
     private List<Item> getAllItems() {

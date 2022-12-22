@@ -2,16 +2,20 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
+@Validated
 public class ItemRequestController {
 
     @Autowired
@@ -34,6 +38,23 @@ public class ItemRequestController {
                 .stream()
                 .map(itemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/all")
+    public List<ItemRequestDto> getAllWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                             @RequestParam(required = false) @Min(0) Integer from,
+                                             @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
+        if (from == null || size == null) {
+            return itemRequestService.getAll(userId)
+                    .stream()
+                    .map(itemRequestMapper::toItemRequestDto)
+                    .collect(Collectors.toList());
+        } else {
+            return itemRequestService.getAllWithPagination(userId, from, size)
+                    .stream()
+                    .map(itemRequestMapper::toItemRequestDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     @GetMapping("/{id}")
