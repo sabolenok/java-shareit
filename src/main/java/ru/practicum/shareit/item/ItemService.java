@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.data.domain.Page;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
@@ -12,9 +13,13 @@ public interface ItemService {
 
     List<Item> getAll(int userId);
 
+    Page<Item> getAllWithPagination(int userId, int from, int size);
+
     Item put(int userId, int id, Item item);
 
     List<Item> search(int userId, String text);
+
+    Page<Item> searchWithPagination(int userId, String text, int from, int size);
 
     Comment addComment(int userId, int itemId, Comment comment);
 }

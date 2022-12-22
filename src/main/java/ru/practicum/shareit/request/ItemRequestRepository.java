@@ -10,8 +10,6 @@ public interface ItemRequestRepository extends JpaRepository<ItemRequest, Intege
 
     List<ItemRequest> findAllByRequestorIdOrderByCreated(int requestorId);
 
-    //Page<ItemRequest> findAll(Pageable pageable);
-
     Page<ItemRequest> findAllByRequestorIdNotOrderByCreated(int requestorId, Pageable pageable);
 
 }

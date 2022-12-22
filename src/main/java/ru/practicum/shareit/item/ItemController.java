@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +16,15 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/items")
 @RequiredArgsConstructor
+@Validated
 public class ItemController {
     @Autowired
     public final ItemService itemService;
@@ -48,6 +52,23 @@ public class ItemController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/all")
+    public List<ItemDto> getAllWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                              @RequestParam(required = false) @Min(0) Integer from,
+                                              @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
+        if (from == null || size == null) {
+            return itemService.getAll(userId)
+                    .stream()
+                    .map(itemMapper::toItemDto)
+                    .collect(Collectors.toList());
+        } else {
+            return itemService.getAllWithPagination(userId, from, size)
+                    .stream()
+                    .map(itemMapper::toItemDto)
+                    .collect(Collectors.toList());
+        }
+    }
+
     @PatchMapping("/{id}")
     public ItemDto patch(@RequestHeader("X-Sharer-User-Id") Integer userId,
                          @PathVariable Integer id, @RequestBody ItemDto itemDto) {
@@ -61,6 +82,24 @@ public class ItemController {
                 .stream()
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/search/all")
+    public List<ItemDto> searchItemWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                                  @RequestParam String text,
+                                                  @RequestParam(required = false) @Min(0) Integer from,
+                                              @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
+        if (from == null || size == null) {
+            return itemService.search(userId, text)
+                    .stream()
+                    .map(itemMapper::toItemDto)
+                    .collect(Collectors.toList());
+        } else {
+            return itemService.searchWithPagination(userId, text, from, size)
+                    .stream()
+                    .map(itemMapper::toItemDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     @PostMapping("{itemId}/comment")

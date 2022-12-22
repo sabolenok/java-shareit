@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
@@ -84,6 +86,14 @@ public class ItemServiceImpl implements ItemService {
         return items;
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Item> getAllWithPagination(int userId, int from, int size) {
+        Page<Item> items = repository.findAllByUserIdOrderById(userId, PageRequest.of(from, size));
+        fillCommentsAndBookingsInItems(userId, (List<Item>) items);
+        return items;
+    }
+
     @Transactional
     @Override
     public Item put(int userId, int id, Item item) {
@@ -138,6 +148,14 @@ public class ItemServiceImpl implements ItemService {
         List<Item> sortedItems = items.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
         fillCommentsAndBookingsInItems(userId, sortedItems);
         return sortedItems;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Item> searchWithPagination(int userId, String text, int from, int size) {
+        Page<Item> items = repository.findByNameOrDescriptionNative(text, PageRequest.of(from, size));
+        fillCommentsAndBookingsInItems(userId, (List<Item>) items);
+        return items;
     }
 
     @Transactional
