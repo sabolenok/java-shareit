@@ -86,7 +86,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new NotFoundException("Пользователь не найден!");
         }
         List<Item> allItems = getAllItems();
-        Page<ItemRequest> itemRequests = repository.findAllByRequestorIdNotOrderByCreated(userId, PageRequest.of(from, size));
+        Page<ItemRequest> itemRequests = repository.findAllByRequestorIdNotOrderByCreated(userId,
+                PageRequest.of(from / size, size));
         for (ItemRequest itemRequest : itemRequests) {
             fillInItemInformation(itemRequest, allItems);
         }

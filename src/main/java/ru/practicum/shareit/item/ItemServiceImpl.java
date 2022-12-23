@@ -89,7 +89,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     @Override
     public Page<Item> getAllWithPagination(int userId, int from, int size) {
-        Page<Item> items = repository.findAllByUserIdOrderById(userId, PageRequest.of(from, size));
+        Page<Item> items = repository.findAllByUserIdOrderById(userId, PageRequest.of(from / size, size));
         fillCommentsAndBookingsInItems(userId, (List<Item>) items);
         return items;
     }
@@ -153,7 +153,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     @Override
     public Page<Item> searchWithPagination(int userId, String text, int from, int size) {
-        Page<Item> items = repository.findByNameOrDescriptionNative(text, PageRequest.of(from, size));
+        Page<Item> items = repository.findByNameOrDescriptionNative(text, PageRequest.of(from / size, size));
         fillCommentsAndBookingsInItems(userId, (List<Item>) items);
         return items;
     }
