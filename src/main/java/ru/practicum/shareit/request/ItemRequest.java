@@ -5,7 +5,13 @@ import lombok.Setter;
 import ru.practicum.shareit.item.dto.ItemInItemRequest;
 import ru.practicum.shareit.user.User;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.GenerationType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
