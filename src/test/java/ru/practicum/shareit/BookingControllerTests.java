@@ -14,8 +14,6 @@ import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -66,7 +64,7 @@ public class BookingControllerTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['id']").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.['status']").value(bookingDto.getStatus()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.['status']").value(bookingDto.getStatus().name()));
     }
 
     @Test
@@ -77,23 +75,24 @@ public class BookingControllerTests {
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['id']").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.['status']").value(bookingDto.getStatus()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.['status']").value(bookingDto.getStatus().name()));
     }
 
     @Test
     void updateBookingTest() throws Exception {
         booking.setStatus(BookingStatus.REJECTED);
-        when(bookingService.put(anyInt(), anyInt(), any()))
+        when(bookingService.put(anyInt(), anyInt(), anyBoolean()))
                 .thenReturn(booking);
         mockMvc.perform(patch("/bookings/1")
                         .header("X-Sharer-User-Id", 1)
+                        .param("approved", "false")
                         .content(objectMapper.writeValueAsString(booking))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['id']").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.['status']").value(BookingStatus.REJECTED));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.['status']").value(BookingStatus.REJECTED.name()));
     }
 
     @Test
@@ -106,7 +105,7 @@ public class BookingControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].status").value(bookingDto.getStatus()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].status").value(bookingDto.getStatus().name()));
     }
 
     @Test
@@ -133,7 +132,7 @@ public class BookingControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].status").value(bookingDto.getStatus()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].status").value(bookingDto.getStatus().name()));
     }
 
     @Test

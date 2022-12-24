@@ -215,5 +215,4 @@ public class ItemControllerTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['id']").value(commentDto.getId()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['text']").value(commentDto.getText()));
     }
-
 }
