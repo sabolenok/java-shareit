@@ -46,11 +46,11 @@ public class ItemRequestControllerTests {
     void setUp() {
         itemRequest = new ItemRequest();
         itemRequest.setId(1);
-        itemRequest.setDescription("test description");
+        itemRequest.setDescription("test request description");
 
         itemRequestDto = new ItemRequestDto();
         itemRequestDto.setId(1);
-        itemRequestDto.setDescription("test description");
+        itemRequestDto.setDescription("test request description");
     }
 
     @Test
@@ -100,6 +100,19 @@ public class ItemRequestControllerTests {
                         .header("X-Sharer-User-Id", 1)
                         .param("from", "1")
                         .param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    void getAllItemRequestsWithoutPaginationParamsTest() throws Exception {
+        when(itemRequestService.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+                .thenReturn(new PageImpl<>(List.of(itemRequest)));
+        when(itemRequestService.getAll(anyInt()))
+                .thenReturn(List.of(itemRequest));
+
+        mockMvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
     }
