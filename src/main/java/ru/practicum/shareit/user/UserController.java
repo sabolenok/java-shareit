@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,24 +19,22 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 public class UserController {
-    @Autowired
+
     public final UserService userService;
-    @Autowired
-    private final UserMapper userMapper;
 
     @PostMapping
     public UserDto add(@Valid @RequestBody UserDto userDto) {
-        return userMapper.toUserDto(userService.create(userMapper.toUser(userDto)));
+        return UserMapper.toUserDto(userService.create(UserMapper.toUser(userDto)));
     }
 
     @GetMapping("/{id}")
     public UserDto get(@PathVariable Integer id) {
-        return userMapper.toUserDto(userService.findById(id));
+        return UserMapper.toUserDto(userService.findById(id));
     }
 
     @PatchMapping("/{id}")
     public UserDto patch(@PathVariable Integer id, @RequestBody UserDto userDto) {
-        return userMapper.toUserDto(userService.put(id, userMapper.toUser(userDto)));
+        return UserMapper.toUserDto(userService.put(id, UserMapper.toUser(userDto)));
     }
 
     @DeleteMapping("/{id}")
@@ -47,6 +44,6 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAll() {
-        return userService.findAll().stream().map(userMapper::toUserDto).collect(Collectors.toList());
+        return userService.findAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,17 +24,13 @@ import java.util.stream.Collectors;
 @Validated
 public class ItemRequestController {
 
-    @Autowired
     private final ItemRequestService itemRequestService;
-
-    @Autowired
-    private final ItemRequestMapper itemRequestMapper;
 
     @PostMapping
     public ItemRequestDto add(@RequestHeader("X-Sharer-User-Id") Integer userId,
                               @Valid @RequestBody ItemRequestDto itemRequestDto) {
-        return itemRequestMapper.toItemRequestDto(
-                itemRequestService.addNewItemRequest(userId, itemRequestMapper.toItemRequest(itemRequestDto))
+        return ItemRequestMapper.toItemRequestDto(
+                itemRequestService.addNewItemRequest(userId, ItemRequestMapper.toItemRequest(itemRequestDto))
         );
     }
 
@@ -43,7 +38,7 @@ public class ItemRequestController {
     public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemRequestService.getAll(userId)
                 .stream()
-                .map(itemRequestMapper::toItemRequestDto)
+                .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
     }
 
@@ -54,18 +49,18 @@ public class ItemRequestController {
         if (from == null || size == null) {
             return itemRequestService.getAll(userId)
                     .stream()
-                    .map(itemRequestMapper::toItemRequestDto)
+                    .map(ItemRequestMapper::toItemRequestDto)
                     .collect(Collectors.toList());
         } else {
             return itemRequestService.getAllWithPagination(userId, from, size)
                     .stream()
-                    .map(itemRequestMapper::toItemRequestDto)
+                    .map(ItemRequestMapper::toItemRequestDto)
                     .collect(Collectors.toList());
         }
     }
 
     @GetMapping("/{id}")
     public ItemRequestDto get(@RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer id) {
-        return itemRequestMapper.toItemRequestDto(itemRequestService.getById(userId, id));
+        return ItemRequestMapper.toItemRequestDto(itemRequestService.getById(userId, id));
     }
 }

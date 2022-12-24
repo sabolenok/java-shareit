@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -36,22 +35,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
-    @Autowired
     private final ItemRepository repository;
 
-    @Autowired
     private final UserRepository userRepository;
 
-    @Autowired
     private final BookingRepository bookingRepository;
 
-    @Autowired
     private final CommentRepository commentRepository;
 
-    @Autowired
-    private final BookingMapper bookingMapper;
-
-    @Autowired
     private final ItemRequestRepository itemRequestRepository;
 
     @Transactional
@@ -97,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Page<Item> getAllWithPagination(int userId, int from, int size) {
         Page<Item> items = repository.findAllByUserIdOrderById(userId, PageRequest.of(from / size, size));
-        fillCommentsAndBookingsInItems(userId, (List<Item>) items);
+        fillCommentsAndBookingsInItems(userId, items);
         return items;
     }
 
@@ -161,7 +152,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Page<Item> searchWithPagination(int userId, String text, int from, int size) {
         Page<Item> items = repository.findByNameOrDescriptionNative(text, PageRequest.of(from / size, size));
-        fillCommentsAndBookingsInItems(userId, (List<Item>) items);
+        fillCommentsAndBookingsInItems(userId, items);
         return items;
     }
 
@@ -208,15 +199,27 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    private void fillCommentsAndBookingsInItems(int userId, Page<Item> items) {
+        List<Comment> comments = getAllComments();
+        List<Booking> bookings = getAllBookings();
+        Map<Integer, User> users = getAllUsers();
+        for (Item item : items) {
+            if (item.getUserId() == userId) {
+                setBookingDates(item, bookings);
+            }
+            setComments(item, users, comments);
+        }
+    }
+
     private void setBookingDates(Item item, List<Booking> allBookings) {
         if (allBookings == null) {
             Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
             if (lastBooking != null) {
-                item.setLastBooking(bookingMapper.toBookingInItem(lastBooking));
+                item.setLastBooking(BookingMapper.toBookingInItem(lastBooking));
             }
             Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
             if (nextBooking != null) {
-                item.setNextBooking(bookingMapper.toBookingInItem(nextBooking));
+                item.setNextBooking(BookingMapper.toBookingInItem(nextBooking));
             }
         } else {
             List<Booking> lastBookings = allBookings.stream()
@@ -224,14 +227,14 @@ public class ItemServiceImpl implements ItemService {
                             .filter(x -> x.getStart().isBefore(LocalDateTime.now()))
                             .collect(Collectors.toList());
             if (!lastBookings.isEmpty()) {
-                item.setLastBooking(bookingMapper.toBookingInItem(lastBookings.get(0)));
+                item.setLastBooking(BookingMapper.toBookingInItem(lastBookings.get(0)));
             }
             List<Booking> nextBookings = allBookings.stream()
                     .filter(x -> x.getItemId() == item.getId())
                     .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
                     .collect(Collectors.toList());
             if (!nextBookings.isEmpty()) {
-                item.setNextBooking(bookingMapper.toBookingInItem(nextBookings.get(nextBookings.size() - 1)));
+                item.setNextBooking(BookingMapper.toBookingInItem(nextBookings.get(nextBookings.size() - 1)));
             }
         }
     }

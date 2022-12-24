@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -14,10 +13,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ItemMapper {
-    @Autowired
-    private final CommentMapper commentMapper;
 
-    public ItemDto toItemDto(Item item) {
+    public static ItemDto toItemDto(Item item) {
         ItemDto itemDto = new ItemDto();
         itemDto.setId(item.getId());
         itemDto.setName(item.getName());
@@ -26,7 +23,7 @@ public class ItemMapper {
         List<Comment> comments = item.getComments();
         if (!(comments == null)) {
             for (Comment c : comments) {
-                commentsDto.add(commentMapper.toCommentDto(c));
+                commentsDto.add(CommentMapper.toCommentDto(c));
             }
             itemDto.setComments(commentsDto);
         }
@@ -37,7 +34,7 @@ public class ItemMapper {
         return itemDto;
     }
 
-    public Item toItem(ItemDto itemDto) {
+    public static Item toItem(ItemDto itemDto) {
         Item item = new Item();
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,29 +25,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Validated
 public class ItemController {
-    @Autowired
     public final ItemService itemService;
-    @Autowired
-    private final ItemMapper itemMapper;
-    @Autowired
-    private final CommentMapper commentMapper;
 
     @PostMapping
     public ItemDto add(@RequestHeader("X-Sharer-User-Id") Integer userId,
                        @Valid @RequestBody ItemDto itemDto) {
-        return itemMapper.toItemDto(itemService.addNewItem(userId, itemMapper.toItem(itemDto)));
+        return ItemMapper.toItemDto(itemService.addNewItem(userId, ItemMapper.toItem(itemDto)));
     }
 
     @GetMapping("/{id}")
     public ItemDto get(@RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer id) {
-        return itemMapper.toItemDto(itemService.getById(userId, id));
+        return ItemMapper.toItemDto(itemService.getById(userId, id));
     }
 
     @GetMapping
     public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.getAll(userId)
                 .stream()
-                .map(itemMapper::toItemDto)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -59,12 +53,12 @@ public class ItemController {
         if (from == null || size == null) {
             return itemService.getAll(userId)
                     .stream()
-                    .map(itemMapper::toItemDto)
+                    .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
         } else {
             return itemService.getAllWithPagination(userId, from, size)
                     .stream()
-                    .map(itemMapper::toItemDto)
+                    .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
         }
     }
@@ -72,7 +66,7 @@ public class ItemController {
     @PatchMapping("/{id}")
     public ItemDto patch(@RequestHeader("X-Sharer-User-Id") Integer userId,
                          @PathVariable Integer id, @RequestBody ItemDto itemDto) {
-        return itemMapper.toItemDto(itemService.put(userId, id, itemMapper.toItem(itemDto)));
+        return ItemMapper.toItemDto(itemService.put(userId, id, ItemMapper.toItem(itemDto)));
     }
 
     @GetMapping("/search")
@@ -80,7 +74,7 @@ public class ItemController {
                                     @RequestParam String text) {
         return itemService.search(userId, text)
                 .stream()
-                .map(itemMapper::toItemDto)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -92,12 +86,12 @@ public class ItemController {
         if (from == null || size == null) {
             return itemService.search(userId, text)
                     .stream()
-                    .map(itemMapper::toItemDto)
+                    .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
         } else {
             return itemService.searchWithPagination(userId, text, from, size)
                     .stream()
-                    .map(itemMapper::toItemDto)
+                    .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
         }
     }
@@ -106,6 +100,6 @@ public class ItemController {
     public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                  @PathVariable Integer itemId,
                                  @Valid @RequestBody CommentDto commentDto) {
-        return commentMapper.toCommentDto(itemService.addComment(userId, itemId, commentMapper.toComment(commentDto)));
+        return CommentMapper.toCommentDto(itemService.addComment(userId, itemId, CommentMapper.toComment(commentDto)));
     }
 }

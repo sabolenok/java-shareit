@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,28 +25,24 @@ import java.util.stream.Collectors;
 @Validated
 public class BookingController {
 
-    @Autowired
     private final BookingService bookingService;
-
-    @Autowired
-    private final BookingMapper bookingMapper;
 
     @PostMapping
     public BookingDto add(@RequestHeader("X-Sharer-User-Id") Integer userId,
                           @Valid @RequestBody BookingDto bookingDto) {
-        return bookingMapper.toBookingDto(bookingService.addNewBooking(userId, bookingMapper.toBooking(bookingDto)));
+        return BookingMapper.toBookingDto(bookingService.addNewBooking(userId, BookingMapper.toBooking(bookingDto)));
     }
 
     @PatchMapping("/{bookingId}")
     public BookingDto put(@RequestHeader("X-Sharer-User-Id") Integer userId,
                           @PathVariable Integer bookingId,
                           @RequestParam Boolean approved) {
-        return bookingMapper.toBookingDto(bookingService.put(userId, bookingId, approved));
+        return BookingMapper.toBookingDto(bookingService.put(userId, bookingId, approved));
     }
 
     @GetMapping("/{id}")
     public BookingDto getById(@RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable int id) {
-        return bookingMapper.toBookingDto(bookingService.getById(userId, id));
+        return BookingMapper.toBookingDto(bookingService.getById(userId, id));
     }
 
     @GetMapping()
@@ -58,12 +53,12 @@ public class BookingController {
         if (from == null || size == null) {
             return bookingService.getByUserId(userId, state)
                     .stream()
-                    .map(bookingMapper::toBookingDto)
+                    .map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
         } else {
             return bookingService.getByUserIdWithPagination(userId, state, from, size)
                     .stream()
-                    .map(bookingMapper::toBookingDto)
+                    .map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
         }
     }
@@ -76,12 +71,12 @@ public class BookingController {
         if (from == null || size == null) {
             return bookingService.getByOwnerId(userId, state)
                     .stream()
-                    .map(bookingMapper::toBookingDto)
+                    .map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
         } else {
             return bookingService.getByOwnerIdWithPagination(userId, state, from, size)
                     .stream()
-                    .map(bookingMapper::toBookingDto)
+                    .map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
         }
     }
