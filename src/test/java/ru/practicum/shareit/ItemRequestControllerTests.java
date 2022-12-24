@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -58,6 +58,7 @@ public class ItemRequestControllerTests {
         when(itemRequestService.addNewItemRequest(anyInt(), any()))
                 .thenReturn(itemRequest);
         mockMvc.perform(post("/requests")
+                        .header("X-Sharer-User-Id", 1)
                         .content(objectMapper.writeValueAsString(itemRequestDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +72,8 @@ public class ItemRequestControllerTests {
     void getOneItemRequestTest() throws Exception {
         when(itemRequestService.getById(anyInt(), anyInt()))
                 .thenReturn(itemRequest);
-        mockMvc.perform(get("/requests/1"))
+        mockMvc.perform(get("/requests/1")
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['id']").value(itemRequestDto.getId()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.['description']").value(itemRequestDto.getDescription()));
@@ -81,7 +83,8 @@ public class ItemRequestControllerTests {
     void getAllItemRequestsTest() throws Exception {
         when(itemRequestService.getAll(anyInt()))
                 .thenReturn(List.of(itemRequest));
-        mockMvc.perform(get("/requests"))
+        mockMvc.perform(get("/requests")
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(itemRequestDto.getId()))
@@ -91,12 +94,13 @@ public class ItemRequestControllerTests {
     @Test
     void getAllItemRequestsWithPaginationTest() throws Exception {
         when(itemRequestService.getAllWithPagination(anyInt(), anyInt(), anyInt()))
-                .thenReturn((Page<ItemRequest>) itemRequest);
+                .thenReturn(new PageImpl<>(List.of(itemRequest)));
 
-        mockMvc.perform(get("/requests/all"))
+        mockMvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1)
+                        .param("from", "1")
+                        .param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(itemRequestDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(itemRequestDto.getDescription()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
     }
 }
