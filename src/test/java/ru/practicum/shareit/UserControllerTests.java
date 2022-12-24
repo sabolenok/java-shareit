@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserController;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -36,9 +35,6 @@ public class UserControllerTests {
 
     @MockBean
     UserService userService;
-
-    @MockBean
-    UserMapper userMapper;
 
     private User user;
 
