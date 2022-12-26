@@ -9,8 +9,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -197,6 +199,25 @@ public class UserServiceTest {
         userService.setRepository(userRepository);
 
         Assertions.assertEquals(userService.getRepository(), userRepository);
-        Assertions.assertNull(userService.getUserStorage());
+    }
+
+    @Test
+    public void mapperTest() {
+        user = new User();
+        user.setId(1);
+        user.setName("test_user");
+        user.setEmail("test@test.ru");
+
+        UserDto userDto = UserMapper.toUserDto(user);
+
+        User userNew = UserMapper.toUser(userDto);
+
+        Assertions.assertEquals(user.getId(), userDto.getId());
+        Assertions.assertEquals(user.getName(), userDto.getName());
+        Assertions.assertEquals(user.getEmail(), userDto.getEmail());
+
+        Assertions.assertEquals(userNew.getId(), userDto.getId());
+        Assertions.assertEquals(userNew.getName(), userDto.getName());
+        Assertions.assertEquals(userNew.getEmail(), userDto.getEmail());
     }
 }

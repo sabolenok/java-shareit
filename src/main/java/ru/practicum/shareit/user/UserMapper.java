@@ -1,12 +1,10 @@
 package ru.practicum.shareit.user;
 
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.dto.UserDto;
 
 @Component
-@RequiredArgsConstructor
 public class UserMapper {
 
     private static final ModelMapper modelMapper = new ModelMapper();

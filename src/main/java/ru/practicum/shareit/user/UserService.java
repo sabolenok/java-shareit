@@ -18,10 +18,6 @@ public class UserService {
 
     @Autowired
     @Getter
-    private UserStorage userStorage;
-
-    @Autowired
-    @Getter
     @Setter
     private UserRepository repository;
 
