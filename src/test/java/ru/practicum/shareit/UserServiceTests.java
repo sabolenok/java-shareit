@@ -114,7 +114,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void updateUserNotFound() {
+    public void updateUserNotFoundThrowsException() {
         User update = new User();
         update.setId(1);
         update.setName("update_test_user");
@@ -150,7 +150,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void findByIdUserNotFound() {
+    public void findByIdUserNotFoundThrowsException() {
         userService = new UserService();
         userService.setRepository(userRepository);
 

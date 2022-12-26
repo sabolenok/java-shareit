@@ -102,7 +102,7 @@ public class ItemRequestServiceImplTests {
     }
 
     @Test
-    public void getAllItemRequestsUserNotFound() {
+    public void getAllItemRequestsUserNotFoundThrowsException() {
         itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
 
         Mockito.when(userRepository.findById(anyInt()))
@@ -147,7 +147,7 @@ public class ItemRequestServiceImplTests {
     }
 
     @Test
-    public void getByIdItemRequestsUserNotFound() {
+    public void getByIdItemRequestsUserNotFoundThrowsException() {
         itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
 
         Mockito.when(repository.findById(anyInt()))
@@ -163,7 +163,7 @@ public class ItemRequestServiceImplTests {
     }
 
     @Test
-    public void getByIdItemRequestsNotFound() {
+    public void getByIdItemRequestsNotFoundThrowsException() {
         user = new User();
         user.setId(1);
         user.setName("test_user");
@@ -205,7 +205,7 @@ public class ItemRequestServiceImplTests {
     }
 
     @Test
-    public void getAllItemRequestsWithPaginationUserNotFound() {
+    public void getAllItemRequestsWithPaginationUserNotFoundThrowsException() {
         itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
 
         Mockito.when(userRepository.findById(anyInt()))
