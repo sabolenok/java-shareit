@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class UserServiceTest {
+public class UserServiceTests {
 
     private User user;
     @Mock
