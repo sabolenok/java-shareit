@@ -95,6 +95,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     private void fillInItemInformation(ItemRequest itemRequest, List<Item> allItems) {
+        if (allItems == null || allItems.isEmpty()) {
+            return;
+        }
         List<Item> items = allItems.stream()
                 .filter(x -> x.getRequestId() == itemRequest.getId())
                 .collect(Collectors.toList());
