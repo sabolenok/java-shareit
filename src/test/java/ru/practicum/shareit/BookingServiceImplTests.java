@@ -988,7 +988,7 @@ public class BookingServiceImplTests {
     }
 
     @Test
-    public void BookingInItemMapperTest() {
+    public void bookingInItemMapperTest() {
         booking = new Booking();
         booking.setId(10);
         booking.setStart(LocalDateTime.of(2020, 1, 1, 0, 0));
