@@ -227,27 +227,26 @@ public class BookingServiceImpl implements BookingService {
 
         Set<Integer> itemId = userItems.stream().map(Item::getId).collect(Collectors.toSet());
         List<Booking> bookings;
-        Sort sort = Sort.by(Sort.Direction.DESC, "end");
 
         switch (state) {
             case ALL:
-                bookings = repository.findByItemIdIn(itemId, sort);
+                bookings = repository.findByItemIdInOrderByEndDesc(itemId);
                 break;
             case CURRENT:
-                bookings = repository.findByItemIdInAndStartBeforeAndEndAfter(itemId, LocalDateTime.now(),
-                        LocalDateTime.now(), sort);
+                bookings = repository.findByItemIdInAndStartBeforeAndEndAfterOrderByEndDesc(itemId, LocalDateTime.now(),
+                        LocalDateTime.now());
                 break;
             case PAST:
-                bookings = repository.findByItemIdInAndEndBefore(itemId, LocalDateTime.now(), sort);
+                bookings = repository.findByItemIdInAndEndBeforeOrderByEndDesc(itemId, LocalDateTime.now());
                 break;
             case FUTURE:
-                bookings = repository.findByItemIdInAndStartAfter(itemId, LocalDateTime.now(), sort);
+                bookings = repository.findByItemIdInAndStartAfterOrderByEndDesc(itemId, LocalDateTime.now());
                 break;
             case WAITING:
-                bookings = repository.findByItemIdInAndStatus(itemId, BookingStatus.WAITING, sort);
+                bookings = repository.findByItemIdInAndStatusOrderByEndDesc(itemId, BookingStatus.WAITING);
                 break;
             case REJECTED:
-                bookings = repository.findByItemIdInAndStatus(itemId, BookingStatus.REJECTED, sort);
+                bookings = repository.findByItemIdInAndStatusOrderByEndDesc(itemId, BookingStatus.REJECTED);
                 break;
             default:
                 throw new UnsupportedStateException("Unknown state: " + state);

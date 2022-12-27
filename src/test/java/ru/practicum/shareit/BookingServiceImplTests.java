@@ -6,19 +6,22 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import ru.practicum.shareit.booking.*;
-import ru.practicum.shareit.exception.*;
-import ru.practicum.shareit.item.*;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemInItemRequest;
-import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingServiceImpl;
+import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.State;
+import ru.practicum.shareit.booking.dto.BookingInItem;
+import ru.practicum.shareit.exception.BookingDateException;
+import ru.practicum.shareit.exception.WrongOwnerException;
+import ru.practicum.shareit.exception.UnsupportedStateException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.BookingStatusException;
+import ru.practicum.shareit.exception.ItemNotAvailableException;
+import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -810,5 +813,202 @@ public class BookingServiceImplTests {
         for (String s : states) {
             Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 2).getSize(), 1);
         }
+    }
+
+    @Test
+    public void getBookingByOwnerIdSuccessful() {
+        item = new Item();
+        item.setId(1);
+        item.setName("name");
+        item.setDescription("test description");
+        item.setAvailable(true);
+
+        user = new User();
+        user.setId(1);
+        user.setName("test_user");
+        user.setEmail("test@test.ru");
+
+        booking = new Booking();
+        booking.setId(1);
+        booking.setStart(LocalDateTime.now().plusMinutes(10));
+        booking.setEnd(LocalDateTime.now().plusMinutes(20));
+        booking.setItemId(1);
+        booking.setItem(item);
+        booking.setUserId(1);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.WAITING);
+
+        List<String> states = new ArrayList<>();
+        states.add(State.ALL.name());
+        states.add(State.CURRENT.name());
+        states.add(State.PAST.name());
+        states.add(State.FUTURE.name());
+        states.add(State.WAITING.name());
+        states.add(State.REJECTED.name());
+
+        bookingService = new BookingServiceImpl(repository, userRepo, itemRepo);
+
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(userRepo.findAll())
+                .thenReturn(List.of(user));
+        Mockito.when(itemRepo.findAll())
+                .thenReturn(List.of(item));
+        Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
+                .thenReturn(List.of(item));
+        Mockito.when(repository.findByItemIdInOrderByEndDesc(any()))
+                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByItemIdInAndStartBeforeAndEndAfterOrderByEndDesc(any(), any(), any()))
+                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByItemIdInAndEndBeforeOrderByEndDesc(any(), any()))
+                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByItemIdInAndStartAfterOrderByEndDesc(any(), any()))
+                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByItemIdInAndStatusOrderByEndDesc(any(), any()))
+                .thenReturn(List.of(booking));
+
+        for (String s : states) {
+            Assertions.assertEquals(bookingService.getByOwnerId(1, s).get(0), booking);
+        }
+    }
+
+    @Test
+    public void getBookingByOwnerIdWithWrongStateThrowsException() {
+        bookingService = new BookingServiceImpl(repository, userRepo, itemRepo);
+
+        try {
+            bookingService.getByOwnerId(1, "wrong_state");
+        } catch (UnsupportedStateException e) {
+            Assertions.assertEquals("Unknown state: wrong_state", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getBookingByOwnerIdUserNotFoundThrowsException() {
+        bookingService = new BookingServiceImpl(repository, userRepo, itemRepo);
+
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.empty());
+
+        try {
+            bookingService.getByOwnerId(1, "ALL");
+        } catch (NotFoundException e) {
+            Assertions.assertEquals("Пользователь не найден", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getBookingByOwnerItemsNotFoundThrowsException() {
+        user = new User();
+        user.setId(1);
+        user.setName("test_user");
+        user.setEmail("test@test.ru");
+
+        booking = new Booking();
+        booking.setId(1);
+        booking.setStart(LocalDateTime.now().plusMinutes(10));
+        booking.setEnd(LocalDateTime.now().plusMinutes(20));
+        booking.setItemId(1);
+        booking.setItem(item);
+        booking.setUserId(1);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.WAITING);
+
+        bookingService = new BookingServiceImpl(repository, userRepo, itemRepo);
+
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(userRepo.findAll())
+                .thenReturn(List.of(user));
+        Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
+                .thenReturn(new ArrayList<>());
+
+        try {
+            bookingService.getByOwnerId(1, "ALL");
+        } catch (NotFoundException e) {
+            Assertions.assertEquals("У пользователь не найдено вещей", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getBookingByOwnerIdWithPaginationSuccessful() {
+        item = new Item();
+        item.setId(1);
+        item.setName("name");
+        item.setDescription("test description");
+        item.setAvailable(true);
+
+        user = new User();
+        user.setId(1);
+        user.setName("test_user");
+        user.setEmail("test@test.ru");
+
+        booking = new Booking();
+        booking.setId(1);
+        booking.setStart(LocalDateTime.now().plusMinutes(10));
+        booking.setEnd(LocalDateTime.now().plusMinutes(20));
+        booking.setItemId(1);
+        booking.setItem(item);
+        booking.setUserId(1);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.WAITING);
+
+        List<String> states = new ArrayList<>();
+        states.add(State.ALL.name());
+        states.add(State.CURRENT.name());
+        states.add(State.PAST.name());
+        states.add(State.FUTURE.name());
+        states.add(State.WAITING.name());
+        states.add(State.REJECTED.name());
+
+        bookingService = new BookingServiceImpl(repository, userRepo, itemRepo);
+
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(userRepo.findAll())
+                .thenReturn(List.of(user));
+        Mockito.when(itemRepo.findAll())
+                .thenReturn(List.of(item));
+        Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
+                .thenReturn(List.of(item));
+        Mockito.when(repository.findByItemIdIn(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStartBeforeAndEndAfter(any(), any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndEndBefore(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStartAfter(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStatus(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        for (String s : states) {
+            Assertions.assertEquals(bookingService.getByOwnerIdWithPagination(1, s, 0, 2).getSize(), 1);
+        }
+    }
+
+    @Test
+    public void BookingInItemMapperTest() {
+        booking = new Booking();
+        booking.setId(10);
+        booking.setStart(LocalDateTime.of(2020, 1, 1, 0, 0));
+        booking.setEnd(LocalDateTime.of(2021, 1, 1, 0, 0));
+        booking.setUserId(42);
+
+        BookingInItem bII = new BookingInItem();
+        bII.setId(1);
+        bII.setStart(LocalDateTime.now());
+        bII.setEnd(LocalDateTime.now());
+        bII.setBookerId(1);
+
+        booking.setId(bII.getId());
+        booking.setStart(bII.getStart());
+        booking.setEnd(bII.getEnd());
+        booking.setUserId(bII.getBookerId());
+
+        Assertions.assertEquals(booking.getId(), bII.getId());
+        Assertions.assertEquals(booking.getStart(), bII.getStart());
+        Assertions.assertEquals(booking.getEnd(), bII.getEnd());
+        Assertions.assertEquals(booking.getUserId(), bII.getBookerId());
     }
 }

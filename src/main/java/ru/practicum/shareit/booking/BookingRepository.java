@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -32,25 +31,25 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     Page<Booking> findByUserIdAndStatus(int bookerId, BookingStatus status, Pageable pageable);
 
-    List<Booking> findByItemIdIn(Collection<Integer> itemId, Sort sort);
+    List<Booking> findByItemIdInOrderByEndDesc(Collection<Integer> itemId);
 
     Page<Booking> findByItemIdIn(Collection<Integer> itemId, Pageable pageable);
 
-    List<Booking> findByItemIdInAndStartBeforeAndEndAfter(Collection<Integer> itemId, LocalDateTime start,
-                                                          LocalDateTime end, Sort sort);
+    List<Booking> findByItemIdInAndStartBeforeAndEndAfterOrderByEndDesc(Collection<Integer> itemId, LocalDateTime start,
+                                                          LocalDateTime end);
 
     Page<Booking> findByItemIdInAndStartBeforeAndEndAfter(Collection<Integer> itemId, LocalDateTime start,
                                                           LocalDateTime end, Pageable pageable);
 
-    List<Booking> findByItemIdInAndEndBefore(Collection<Integer> itemId, LocalDateTime end, Sort sort);
+    List<Booking> findByItemIdInAndEndBeforeOrderByEndDesc(Collection<Integer> itemId, LocalDateTime end);
 
     Page<Booking> findByItemIdInAndEndBefore(Collection<Integer> itemId, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findByItemIdInAndStartAfter(Collection<Integer> itemId, LocalDateTime start, Sort sort);
+    List<Booking> findByItemIdInAndStartAfterOrderByEndDesc(Collection<Integer> itemId, LocalDateTime start);
 
     Page<Booking> findByItemIdInAndStartAfter(Collection<Integer> itemId, LocalDateTime start, Pageable pageable);
 
-    List<Booking> findByItemIdInAndStatus(Collection<Integer> itemId, BookingStatus status, Sort sort);
+    List<Booking> findByItemIdInAndStatusOrderByEndDesc(Collection<Integer> itemId, BookingStatus status);
 
     Page<Booking> findByItemIdInAndStatus(Collection<Integer> itemId, BookingStatus status, Pageable pageable);
 
