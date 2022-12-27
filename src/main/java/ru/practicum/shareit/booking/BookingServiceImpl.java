@@ -139,27 +139,26 @@ public class BookingServiceImpl implements BookingService {
         State state = getRequestedState(requestedState);
         User booker = checkUser(userId);
         List<Booking> bookings;
-        Sort sort = Sort.by(Sort.Direction.DESC, "end");
 
         switch (state) {
             case ALL:
-                bookings = repository.findByUserId(userId, sort);
+                bookings = repository.findByUserIdOrderByEndDesc(userId);
                 break;
             case CURRENT:
-                bookings = repository.findByUserIdAndStartBeforeAndEndAfter(userId, LocalDateTime.now(),
-                        LocalDateTime.now(), sort);
+                bookings = repository.findByUserIdAndStartBeforeAndEndAfterOrderByEndDesc(userId, LocalDateTime.now(),
+                        LocalDateTime.now());
                 break;
             case PAST:
-                bookings = repository.findByUserIdAndEndBefore(userId, LocalDateTime.now(), sort);
+                bookings = repository.findByUserIdAndEndBeforeOrderByEndDesc(userId, LocalDateTime.now());
                 break;
             case FUTURE:
-                bookings = repository.findByUserIdAndStartAfter(userId, LocalDateTime.now(), sort);
+                bookings = repository.findByUserIdAndStartAfterOrderByEndDesc(userId, LocalDateTime.now());
                 break;
             case WAITING:
-                bookings = repository.findByUserIdAndStatus(userId, BookingStatus.WAITING, sort);
+                bookings = repository.findByUserIdAndStatusOrderByEndDesc(userId, BookingStatus.WAITING);
                 break;
             case REJECTED:
-                bookings = repository.findByUserIdAndStatus(userId, BookingStatus.REJECTED, sort);
+                bookings = repository.findByUserIdAndStatusOrderByEndDesc(userId, BookingStatus.REJECTED);
                 break;
             default:
                 throw new UnsupportedStateException("Unknown state: " + state);

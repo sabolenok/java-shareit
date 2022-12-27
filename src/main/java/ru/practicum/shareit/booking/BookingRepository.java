@@ -11,24 +11,24 @@ import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
-    List<Booking> findByUserIdAndEndBefore(int bookerId, LocalDateTime end, Sort sort);
+    List<Booking> findByUserIdAndEndBeforeOrderByEndDesc(int bookerId, LocalDateTime end);
 
     Page<Booking> findByUserIdAndEndBefore(int bookerId, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findByUserId(int bookerId, Sort sort);
+    List<Booking> findByUserIdOrderByEndDesc(int bookerId);
 
     Page<Booking> findByUserId(int bookerId, Pageable pageable);
 
-    List<Booking> findByUserIdAndStartBeforeAndEndAfter(int bookerId, LocalDateTime start, LocalDateTime end, Sort sort);
+    List<Booking> findByUserIdAndStartBeforeAndEndAfterOrderByEndDesc(int bookerId, LocalDateTime start, LocalDateTime end);
 
     Page<Booking> findByUserIdAndStartBeforeAndEndAfter(int bookerId, LocalDateTime start, LocalDateTime end,
                                                         Pageable pageable);
 
-    List<Booking> findByUserIdAndStartAfter(int bookerId, LocalDateTime start, Sort sort);
+    List<Booking> findByUserIdAndStartAfterOrderByEndDesc(int bookerId, LocalDateTime start);
 
     Page<Booking> findByUserIdAndStartAfter(int bookerId, LocalDateTime start, Pageable pageable);
 
-    List<Booking> findByUserIdAndStatus(int bookerId, BookingStatus status, Sort sort);
+    List<Booking> findByUserIdAndStatusOrderByEndDesc(int bookerId, BookingStatus status);
 
     Page<Booking> findByUserIdAndStatus(int bookerId, BookingStatus status, Pageable pageable);
 
