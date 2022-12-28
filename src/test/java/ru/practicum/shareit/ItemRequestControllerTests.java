@@ -225,6 +225,20 @@ public class ItemRequestControllerTests {
     }
 
     @Test
+    public void getAllItemRequestsAllItemsIsNullSuccessful() {
+        itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
+
+        Mockito.when(repository.findAllByRequestorIdOrderByCreated(anyInt()))
+                .thenReturn(List.of(itemRequest));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepository.findAll())
+                .thenReturn(null);
+
+        Assertions.assertEquals(itemRequestService.getAll(user.getId()).size(), 1);
+    }
+
+    @Test
     public void getAllItemRequestsUserNotFoundThrowsException() {
         Mockito.when(userRepository.findById(anyInt()))
                 .thenReturn(Optional.empty());

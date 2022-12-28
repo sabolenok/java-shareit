@@ -511,6 +511,37 @@ public class BookingControllerTests {
     }
 
     @Test
+    public void updateBookingUserNotOwnerAndNotBookerThrowsException() {
+        Booking bookingUpd = new Booking();
+        bookingUpd.setId(1);
+        bookingUpd.setStart(LocalDateTime.now().plusMinutes(10));
+        bookingUpd.setEnd(LocalDateTime.now().plusMinutes(20));
+        bookingUpd.setItemId(1);
+        bookingUpd.setItem(item);
+        bookingUpd.setUserId(1);
+        bookingUpd.setBooker(user);
+        bookingUpd.setStatus(BookingStatus.REJECTED);
+        booking.setUserId(42);
+
+        Mockito.when(repository.save(any()))
+                .thenReturn(bookingUpd);
+        Mockito.when(userRepo.findById(1))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(userRepo.findById(42))
+                .thenReturn(Optional.empty());
+        Mockito.when(itemRepo.findByIdAndUserId(anyInt(), anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        try {
+            bookingService.put(1, 1, true);
+        } catch  (WrongOwnerException e) {
+            Assertions.assertEquals("Пользователь не является владельцем вещи", e.getMessage());
+        }
+    }
+
+    @Test
     public void updateBookingUserNotOwnerThrowsException() {
         Booking bookingUpd = new Booking();
         bookingUpd.setId(1);
@@ -539,7 +570,41 @@ public class BookingControllerTests {
     }
 
     @Test
+    public void updateBookingUserNotBookerThrowsException() {
+        Booking bookingUpd = new Booking();
+        bookingUpd.setId(1);
+        bookingUpd.setStart(LocalDateTime.now().plusMinutes(10));
+        bookingUpd.setEnd(LocalDateTime.now().plusMinutes(20));
+        bookingUpd.setItemId(1);
+        bookingUpd.setItem(item);
+        bookingUpd.setUserId(1);
+        bookingUpd.setBooker(user);
+        bookingUpd.setStatus(BookingStatus.REJECTED);
+        booking.setUserId(42);
+
+        Mockito.when(repository.save(any()))
+                .thenReturn(bookingUpd);
+        Mockito.when(userRepo.findById(1))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(userRepo.findById(42))
+                .thenReturn(Optional.empty());
+        Mockito.when(itemRepo.findByIdAndUserId(anyInt(), anyInt()))
+                .thenReturn(Optional.ofNullable(item));
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        try {
+            bookingService.put(1, 1, true);
+        } catch  (WrongOwnerException e) {
+            Assertions.assertEquals("Пользователь не является владельцем вещи", e.getMessage());
+        }
+    }
+
+    @Test
     public void getBookingByIdSuccessful() {
+        item.setUserId(1);
+        booking.setUserId(1);
+
         Mockito.when(userRepo.findById(anyInt()))
                 .thenReturn(Optional.ofNullable(user));
         Mockito.when(itemRepo.findById(anyInt()))
@@ -552,24 +617,7 @@ public class BookingControllerTests {
 
     @Test
     public void getBookingByIdUserIsOwnerSuccessful() {
-        item.setUserId(42);
-
-        Mockito.when(userRepo.findById(anyInt()))
-                .thenReturn(Optional.ofNullable(user));
-        Mockito.when(itemRepo.findById(anyInt()))
-                .thenReturn(Optional.ofNullable(item));
-        Mockito.when(repository.findById(anyInt()))
-                .thenReturn(Optional.ofNullable(booking));
-
-        try {
-            bookingService.getById(1, 1);
-        } catch  (WrongOwnerException e) {
-            Assertions.assertEquals("У пользователя недостаточно прав для просмотра данного бронирования", e.getMessage());
-        }
-    }
-
-    @Test
-    public void getBookingByIdUserIsBookerSuccessful() {
+        item.setUserId(1);
         booking.setUserId(42);
 
         Mockito.when(userRepo.findById(anyInt()))
@@ -579,11 +627,22 @@ public class BookingControllerTests {
         Mockito.when(repository.findById(anyInt()))
                 .thenReturn(Optional.ofNullable(booking));
 
-        try {
-            bookingService.getById(1, 1);
-        } catch  (WrongOwnerException e) {
-            Assertions.assertEquals("У пользователя недостаточно прав для просмотра данного бронирования", e.getMessage());
-        }
+        Assertions.assertEquals(bookingService.getById(1, 1), booking);
+    }
+
+    @Test
+    public void getBookingByIdUserIsBookerSuccessful() {
+        item.setUserId(42);
+        booking.setUserId(1);
+
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(item));
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        Assertions.assertEquals(bookingService.getById(1, 1), booking);
     }
 
     @Test
@@ -602,6 +661,38 @@ public class BookingControllerTests {
     public void getBookingByIdItemNotFoundThrowsException() {
         Mockito.when(userRepo.findById(anyInt()))
                 .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepo.findById(anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        try {
+            bookingService.getById(1, 1);
+        } catch  (NotFoundException e) {
+            Assertions.assertEquals("Вещь не найдена", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getBookingByIdBookerNotFoundThrowsException() {
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(itemRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(item));
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        try {
+            bookingService.getById(1, 1);
+        } catch  (NotFoundException e) {
+            Assertions.assertEquals("Вещь не найдена", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getBookingByIdItemNotFoundAndBookerNotFoundThrowsException() {
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.empty());
         Mockito.when(itemRepo.findById(anyInt()))
                 .thenReturn(Optional.empty());
         Mockito.when(repository.findById(anyInt()))
@@ -705,6 +796,18 @@ public class BookingControllerTests {
     }
 
     @Test
+    public void getBookingByUserIdUnsupportedStateThrowsException() {
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+
+        try {
+            bookingService.getByUserId(1, State.TEST.name());
+        } catch (UnsupportedStateException e) {
+            Assertions.assertEquals("Unknown state: TEST", e.getMessage());
+        }
+    }
+
+    @Test
     public void getBookingByUserIdUserNotFoundThrowsException() {
         Mockito.when(userRepo.findById(anyInt()))
                 .thenReturn(Optional.empty());
@@ -743,6 +846,18 @@ public class BookingControllerTests {
 
         for (String s : states) {
             Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 2).getSize(), 1);
+        }
+    }
+
+    @Test
+    public void getBookingByUserIdWithPaginationUnsupportedStateThrowsException() {
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+
+        try {
+            bookingService.getByUserIdWithPagination(1, State.TEST.name(), 0, 2);
+        } catch (UnsupportedStateException e) {
+            Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }
     }
 
@@ -827,6 +942,20 @@ public class BookingControllerTests {
     }
 
     @Test
+    public void getBookingByOwnerIdUnsupportedStateThrowsException() {
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
+                .thenReturn(List.of(item));
+
+        try {
+            bookingService.getByOwnerId(1, State.TEST.name());
+        } catch (UnsupportedStateException e) {
+            Assertions.assertEquals("Unknown state: TEST", e.getMessage());
+        }
+    }
+
+    @Test
     public void getBookingByOwnerIdUserNotFoundThrowsException() {
         Mockito.when(userRepo.findById(anyInt()))
                 .thenReturn(Optional.empty());
@@ -889,11 +1018,25 @@ public class BookingControllerTests {
     }
 
     @Test
+    public void getBookingByOwnerIdWithPaginationUnsupportedStateThrowsException() {
+        Mockito.when(userRepo.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
+                .thenReturn(List.of(item));
+
+        try {
+            bookingService.getByOwnerIdWithPagination(1, State.TEST.name(), 0, 2);
+        } catch (UnsupportedStateException e) {
+            Assertions.assertEquals("Unknown state: TEST", e.getMessage());
+        }
+    }
+
+    @Test
     public void mapperTest() {
         bookingDto.setBooker(user);
         bookingDto.setItem(item);
-        Booking newBooking = new Booking();
-        BookingMapper.toBooking(bookingDto);
+        Booking newBooking = BookingMapper.toBooking(bookingDto);
+        Assertions.assertEquals(newBooking.getId(), bookingDto.getId());
 
         booking.setId(10);
         booking.setStart(LocalDateTime.of(2020, 1, 1, 0, 0));
