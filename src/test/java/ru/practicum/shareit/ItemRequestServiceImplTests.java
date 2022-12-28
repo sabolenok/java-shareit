@@ -1,6 +1,6 @@
 package ru.practicum.shareit;
 
-import org.junit.Test;
+/*import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -27,10 +27,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)*/
 public class ItemRequestServiceImplTests {
 
-    private ItemRequest itemRequest;
+    /*private ItemRequest itemRequest;
 
     private User user;
 
@@ -238,5 +238,5 @@ public class ItemRequestServiceImplTests {
         Assertions.assertEquals(itemRequestNew.getId(), itemRequestDto.getId());
         Assertions.assertEquals(itemRequestNew.getDescription(), itemRequestDto.getDescription());
         Assertions.assertEquals(itemRequestNew.getCreated(), itemRequestDto.getCreated());
-    }
+    }*/
 }

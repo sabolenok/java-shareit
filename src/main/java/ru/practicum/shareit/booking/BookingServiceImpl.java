@@ -64,9 +64,6 @@ public class BookingServiceImpl implements BookingService {
                 if (booking.getStart().isBefore(LocalDateTime.now())) {
                     throw new BookingDateException("Дата начала бронирования не может быть в прошлом!");
                 }
-                if (booking.getEnd().isBefore(LocalDateTime.now())) {
-                    throw new BookingDateException("Дата окончания бронирования не может в прошлом!");
-                }
                 booking.setStatus(BookingStatus.WAITING);
                 booking.setBooker(user.get());
                 booking.setUserId(userId);

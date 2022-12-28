@@ -1,8 +1,11 @@
 package ru.practicum.shareit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -10,11 +13,19 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserRepository;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,7 +44,7 @@ public class ItemRequestControllerTests {
     ObjectMapper objectMapper;
 
     @MockBean
-    ItemRequestServiceImpl itemRequestService;
+    ItemRequestServiceImpl itemRequestServiceMock;
 
     @MockBean
     ItemRequestRepository itemRequestRepository;
@@ -41,6 +52,19 @@ public class ItemRequestControllerTests {
     private ItemRequest itemRequest;
 
     private ItemRequestDto itemRequestDto;
+
+    private User user;
+
+    @Mock
+    ItemRequestRepository repository;
+
+    @Mock
+    UserRepository userRepository;
+
+    @Mock
+    ItemRepository itemRepository;
+
+    ItemRequestServiceImpl itemRequestService;
 
     @BeforeEach
     void setUp() {
@@ -51,11 +75,19 @@ public class ItemRequestControllerTests {
         itemRequestDto = new ItemRequestDto();
         itemRequestDto.setId(1);
         itemRequestDto.setDescription("test request description");
+
+        user = new User();
+        user.setId(1);
+        user.setName("test_user");
+        user.setEmail("test@test.ru");
+
+        itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
     }
 
+    //++ Тесты контроллера
     @Test
     void createNewItemRequestTest() throws Exception {
-        when(itemRequestService.addNewItemRequest(anyInt(), any()))
+        when(itemRequestServiceMock.addNewItemRequest(anyInt(), any()))
                 .thenReturn(itemRequest);
         mockMvc.perform(post("/requests")
                         .header("X-Sharer-User-Id", 1)
@@ -70,7 +102,7 @@ public class ItemRequestControllerTests {
 
     @Test
     void getOneItemRequestTest() throws Exception {
-        when(itemRequestService.getById(anyInt(), anyInt()))
+        when(itemRequestServiceMock.getById(anyInt(), anyInt()))
                 .thenReturn(itemRequest);
         mockMvc.perform(get("/requests/1")
                         .header("X-Sharer-User-Id", 1))
@@ -81,7 +113,7 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsTest() throws Exception {
-        when(itemRequestService.getAll(anyInt()))
+        when(itemRequestServiceMock.getAll(anyInt()))
                 .thenReturn(List.of(itemRequest));
         mockMvc.perform(get("/requests")
                         .header("X-Sharer-User-Id", 1))
@@ -93,7 +125,7 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsWithPaginationTest() throws Exception {
-        when(itemRequestService.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(itemRequest)));
 
         mockMvc.perform(get("/requests/all")
@@ -106,9 +138,9 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsWithoutPaginationParamsTest() throws Exception {
-        when(itemRequestService.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(itemRequest)));
-        when(itemRequestService.getAll(anyInt()))
+        when(itemRequestServiceMock.getAll(anyInt()))
                 .thenReturn(List.of(itemRequest));
 
         mockMvc.perform(get("/requests/all")
@@ -116,4 +148,201 @@ public class ItemRequestControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
     }
+
+    @Test
+    void getAllItemRequestsWithoutFirstPaginationParamTest() throws Exception {
+        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+                .thenReturn(new PageImpl<>(List.of(itemRequest)));
+        when(itemRequestServiceMock.getAll(anyInt()))
+                .thenReturn(List.of(itemRequest));
+
+        mockMvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1)
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    void getAllItemRequestsWithoutSecondPaginationParamTest() throws Exception {
+        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+                .thenReturn(new PageImpl<>(List.of(itemRequest)));
+        when(itemRequestServiceMock.getAll(anyInt()))
+                .thenReturn(List.of(itemRequest));
+
+        mockMvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1)
+                        .param("from", "1"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
+    }
+
+    //-- Тесты контроллера
+
+    //++ Unit-тесты сервиса
+    @Test
+    public void createNewItemRequestSuccessful() {
+        Mockito.when(repository.save(any()))
+                .thenReturn(itemRequest);
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+
+        Assertions.assertEquals(itemRequestService.addNewItemRequest(1, itemRequest), itemRequest);
+    }
+
+    @Test
+    public void createNewItemRequestUserNotFound() {
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertNull(itemRequestService.addNewItemRequest(1, itemRequest));
+    }
+
+    @Test
+    public void getAllItemRequestsSuccessful() {
+        itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
+
+        Mockito.when(repository.findAllByRequestorIdOrderByCreated(anyInt()))
+                .thenReturn(List.of(itemRequest));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+
+        Assertions.assertEquals(itemRequestService.getAll(user.getId()).size(), 1);
+    }
+
+    @Test
+    public void getAllItemRequestsAllItemsIsEmptySuccessful() {
+        itemRequestService = new ItemRequestServiceImpl(repository, userRepository, itemRepository);
+
+        Mockito.when(repository.findAllByRequestorIdOrderByCreated(anyInt()))
+                .thenReturn(List.of(itemRequest));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepository.findAll())
+                .thenReturn(new ArrayList<>());
+
+        Assertions.assertEquals(itemRequestService.getAll(user.getId()).size(), 1);
+    }
+
+    @Test
+    public void getAllItemRequestsUserNotFoundThrowsException() {
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.empty());
+
+        try {
+            itemRequestService.getAll(1);
+        } catch  (NotFoundException e) {
+            Assertions.assertEquals("Пользователь не найден!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getByIdItemRequestsSuccessful() {
+        Item item = new Item();
+        item.setId(1);
+        item.setAvailable(true);
+        item.setRequestId(1);
+        item.setRequest(itemRequest);
+
+        Mockito.when(repository.findAllByRequestorIdOrderByCreated(anyInt()))
+                .thenReturn(List.of(itemRequest));
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(itemRequest));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepository.findAll())
+                .thenReturn(List.of(item));
+
+        Assertions.assertEquals(itemRequestService.getById(1, 1), itemRequest);
+    }
+
+    @Test
+    public void getByIdItemRequestsWithoutItemsSuccessful() {
+        Item item = new Item();
+        item.setId(1);
+        item.setAvailable(true);
+        item.setRequestId(42);
+        item.setRequest(itemRequest);
+
+        Mockito.when(repository.findAllByRequestorIdOrderByCreated(anyInt()))
+                .thenReturn(List.of(itemRequest));
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(itemRequest));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+        Mockito.when(itemRepository.findAll())
+                .thenReturn(List.of(item));
+
+        Assertions.assertEquals(itemRequestService.getById(1, 1), itemRequest);
+    }
+
+    @Test
+    public void getByIdItemRequestsUserNotFoundThrowsException() {
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(itemRequest));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.empty());
+
+        try {
+            itemRequestService.getById(1, 1);
+        } catch  (NotFoundException e) {
+            Assertions.assertEquals("Пользователь не найден!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getByIdItemRequestsNotFoundThrowsException() {
+        Mockito.when(repository.findById(anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+
+        try {
+            itemRequestService.getById(1, 1);
+        } catch  (NotFoundException e) {
+            Assertions.assertEquals("Запрос не найден!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void getAllItemRequestsWithPaginationSuccessful() {
+        Mockito.when(repository.findAllByRequestorIdNotOrderByCreated(anyInt(), any()))
+                .thenReturn(new PageImpl<>(List.of(itemRequest)));
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.ofNullable(user));
+
+        Assertions.assertEquals(itemRequestService.getAllWithPagination(1, 1, 1).getSize(), 1);
+    }
+
+    @Test
+    public void getAllItemRequestsWithPaginationUserNotFoundThrowsException() {
+        Mockito.when(userRepository.findById(anyInt()))
+                .thenReturn(Optional.empty());
+
+        try {
+            itemRequestService.getAllWithPagination(1, 1, 1);
+        } catch  (NotFoundException e) {
+            Assertions.assertEquals("Пользователь не найден!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void mapperTest() {
+        itemRequest.setCreated(LocalDateTime.now());
+        itemRequest.setRequestorId(42);
+        Assertions.assertEquals(itemRequest.getRequestorId(), 42);
+
+        itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
+
+        ItemRequest itemRequestNew = ItemRequestMapper.toItemRequest(itemRequestDto);
+
+        Assertions.assertEquals(itemRequest.getId(), itemRequestDto.getId());
+        Assertions.assertEquals(itemRequest.getDescription(), itemRequestDto.getDescription());
+        Assertions.assertEquals(itemRequest.getCreated(), itemRequestDto.getCreated());
+
+        Assertions.assertEquals(itemRequestNew.getId(), itemRequestDto.getId());
+        Assertions.assertEquals(itemRequestNew.getDescription(), itemRequestDto.getDescription());
+        Assertions.assertEquals(itemRequestNew.getCreated(), itemRequestDto.getCreated());
+    }
+    //-- Unit-тесты сервиса
 }

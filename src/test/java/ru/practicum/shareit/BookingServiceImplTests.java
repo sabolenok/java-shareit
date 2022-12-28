@@ -1,6 +1,6 @@
 package ru.practicum.shareit;
 
-import org.junit.Test;
+/*import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,10 +33,10 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)*/
 public class BookingServiceImplTests {
 
-    private Booking booking;
+    /*private Booking booking;
 
     private Item item;
 
@@ -1010,5 +1010,5 @@ public class BookingServiceImplTests {
         Assertions.assertEquals(booking.getStart(), bII.getStart());
         Assertions.assertEquals(booking.getEnd(), bII.getEnd());
         Assertions.assertEquals(booking.getUserId(), bII.getBookerId());
-    }
+    }*/
 }
