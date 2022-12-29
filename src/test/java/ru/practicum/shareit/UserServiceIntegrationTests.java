@@ -34,7 +34,7 @@ public class UserServiceIntegrationTests {
     @Autowired
     private UserRepository repository;
 
-    User user;
+    private User user;
 
     @BeforeEach
     void setUp() {

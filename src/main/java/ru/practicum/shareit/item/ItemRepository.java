@@ -20,9 +20,9 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query(
             nativeQuery = true,
-            value = "SELECT * FROM items i WHERE name ILIKE $1 UNION SELECT * FROM items i WHERE description ILIKE $1 ORDER BY id"
+            value = "SELECT * FROM items i WHERE name ILIKE ? UNION SELECT * FROM items i WHERE description ILIKE ? ORDER BY id"
     )
-    Page<Item> findByNameOrDescriptionNative(String text, Pageable pageable);
+    Page<Item> findByNameOrDescriptionNative(String text, String text1, Pageable pageable);
 
     Optional<Item> findByIdAndUserId(int id, int userId);
 }

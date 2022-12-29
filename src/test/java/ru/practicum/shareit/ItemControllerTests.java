@@ -624,7 +624,7 @@ public class ItemControllerTests {
         items.add(item);
         items.add(newItem);
 
-        Mockito.when(repository.findByNameOrDescriptionNative(anyString(), any()))
+        Mockito.when(repository.findByNameOrDescriptionNative(anyString(), anyString(), any()))
                 .thenReturn(new PageImpl<>(items));
         Mockito.when(repository.findByNameLikeIgnoreCaseAndAvailableOrderById(anyString(), anyBoolean()))
                 .thenReturn(List.of(newItem));

@@ -151,7 +151,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     @Override
     public Page<Item> searchWithPagination(int userId, String text, int from, int size) {
-        Page<Item> items = repository.findByNameOrDescriptionNative(text, PageRequest.of(from / size, size));
+        Page<Item> items = repository.findByNameOrDescriptionNative(text, text, PageRequest.of(from / size, size));
         fillCommentsAndBookingsInItems(userId, items);
         return items;
     }

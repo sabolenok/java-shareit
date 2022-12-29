@@ -50,7 +50,7 @@ public class ItemRequestServiceIntegrationTests {
 
     private ItemRequest itemRequest;
 
-    User user;
+    private User user;
 
     @BeforeEach
     void setUp() {
