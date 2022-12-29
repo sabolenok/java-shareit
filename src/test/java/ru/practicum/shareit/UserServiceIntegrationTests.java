@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserService;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -37,14 +36,8 @@ public class UserServiceIntegrationTests {
 
     User user;
 
-    UserDto userDto;
-
     @BeforeEach
     void setUp() {
-        userDto = new UserDto();
-        userDto.setName("test_user");
-        userDto.setEmail("test@test.ru");
-
         user = new User();
         user.setName("test_user");
         user.setEmail("test@test.ru");
