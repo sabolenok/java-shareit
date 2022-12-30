@@ -20,7 +20,9 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query(
             nativeQuery = true,
-            value = "SELECT * FROM items i WHERE name ILIKE ? UNION SELECT * FROM items i WHERE description ILIKE ? ORDER BY id"
+            value = "SELECT * FROM items i WHERE upper(name) ILIKE '%' || ? || '%' and is_available " +
+                    "UNION SELECT * FROM items i WHERE upper(description) ILIKE '%' || ? || '%' and is_available " +
+                    "ORDER BY id"
     )
     Page<Item> findByNameOrDescriptionNative(String text, String text1, Pageable pageable);
 

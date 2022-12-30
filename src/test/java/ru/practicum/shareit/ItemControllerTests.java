@@ -228,21 +228,6 @@ public class ItemControllerTests {
     }
 
     @Test
-    void searchItemsTest() throws Exception {
-        when(itemServiceMock.search(anyInt(), anyString()))
-                .thenReturn(List.of(item));
-        mockMvc.perform(get("/items/search")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("text", "test"))
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(itemDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(itemDto.getDescription()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(itemDto.getName()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].available").value(itemDto.getAvailable()));
-    }
-
-    @Test
     void searchItemsWithPaginationTest() throws Exception {
         when(itemServiceMock.searchWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(item)));
@@ -260,8 +245,6 @@ public class ItemControllerTests {
     void searchItemsWithoutPaginationParamsTest() throws Exception {
         when(itemServiceMock.searchWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(item)));
-        when(itemServiceMock.search(anyInt(), anyString()))
-                .thenReturn(List.of(item));
 
         mockMvc.perform(get("/items/search/all")
                         .header("X-Sharer-User-Id", 1)
@@ -274,8 +257,6 @@ public class ItemControllerTests {
     void searchItemsWithoutFirstPaginationParamTest() throws Exception {
         when(itemServiceMock.searchWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(item)));
-        when(itemServiceMock.search(anyInt(), anyString()))
-                .thenReturn(List.of(item));
 
         mockMvc.perform(get("/items/search/all")
                         .header("X-Sharer-User-Id", 1)
@@ -289,8 +270,6 @@ public class ItemControllerTests {
     void searchItemsWithoutSecondPaginationParamTest() throws Exception {
         when(itemServiceMock.searchWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(item)));
-        when(itemServiceMock.search(anyInt(), anyString()))
-                .thenReturn(List.of(item));
 
         mockMvc.perform(get("/items/search/all")
                         .header("X-Sharer-User-Id", 1)
@@ -546,52 +525,8 @@ public class ItemControllerTests {
     }
 
     @Test
-    public void searchTest() {
-        Item newItem = new Item();
-        newItem.setId(2);
-        newItem.setName("test name");
-        newItem.setDescription("test description");
-        newItem.setAvailable(true);
-
-        Booking lastBooking = new Booking();
-        lastBooking.setItemId(item.getId());
-        lastBooking.setStart(LocalDateTime.of(2022, 1, 1, 0, 0));
-        lastBooking.setEnd(LocalDateTime.of(2022, 1, 31, 0, 0));
-        Booking nextBooking = new Booking();
-        nextBooking.setItemId(item.getId());
-        nextBooking.setStart(LocalDateTime.of(2023, 5, 5, 0, 0));
-        nextBooking.setEnd(LocalDateTime.of(2023, 5, 31, 0, 0));
-        List<Booking> bookings = new ArrayList<>();
-        bookings.add(lastBooking);
-        bookings.add(nextBooking);
-
-        Comment comment = new Comment();
-        comment.setId(1);
-        comment.setText("test comment");
-        comment.setAuthorId(user.getId());
-        comment.setItemId(item.getId());
-
-        Mockito.when(repository.findAllByUserIdOrderById(anyInt()))
-                .thenReturn(List.of(item));
-        Mockito.when(repository.findByNameLikeIgnoreCaseAndAvailableOrderById(anyString(), anyBoolean()))
-                .thenReturn(List.of(newItem));
-        Mockito.when(repository.findByDescriptionLikeIgnoreCaseAndAvailableOrderById(anyString(), anyBoolean()))
-                .thenReturn(List.of(item));
-        Mockito.when(userRepo.findAll())
-                .thenReturn(List.of(user));
-        Mockito.when(bookingRepo.findAllByStatusOrderByStartDesc(any()))
-                .thenReturn(bookings);
-        Mockito.when(commentRepo.findAll())
-                .thenReturn(List.of(comment));
-
-        Assertions.assertEquals(itemService.search(1, "test").size(), 2);
-        Assertions.assertEquals(itemService.search(1, "test").get(0), item);
-        Assertions.assertEquals(itemService.search(1, "test").get(1), newItem);
-    }
-
-    @Test
     public void searchTestEmpty() {
-        Assertions.assertEquals(itemService.search(1, "").size(), 0);
+        Assertions.assertEquals(itemService.searchWithPagination(1, "", 0, 2).getTotalElements(), 0);
     }
 
     @Test

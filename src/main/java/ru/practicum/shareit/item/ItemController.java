@@ -64,8 +64,10 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemDto> searchItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                    @RequestParam String text) {
-        return itemService.search(userId, text)
+                                    @RequestParam String text,
+                                    @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                    @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return itemService.searchWithPagination(userId, text, from, size)
                 .stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());

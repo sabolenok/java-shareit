@@ -198,32 +198,6 @@ public class ItemServiceIntegrationTests {
     }
 
     @Test
-    public void searchItems() {
-        service.addNewItem(user.getId(), item);
-
-        Item newItem = new Item();
-        newItem.setName("second item name");
-        newItem.setDescription("another item's description");
-        newItem.setAvailable(true);
-        service.addNewItem(user.getId(), newItem);
-
-        List<Item> items = service.search(user.getId(), "test");
-
-        TypedQuery<Item> query = em.createQuery("Select i from Item i where i.name like :text", Item.class);
-        List<Item> itemByName = query.setParameter("text", "%test%").getResultList();
-
-        query = em.createQuery("Select i from Item i where i.description like :text", Item.class);
-        List<Item> itemByDescription = query.setParameter("text", "%test%").getResultList();
-
-        Set<Item> items1 = new HashSet<>();
-        items1.addAll(itemByName);
-        items1.addAll(itemByDescription);
-
-        assertThat(items1.size(), equalTo(1));
-        assertThat(items1.size(), equalTo(items.size()));
-    }
-
-    @Test
     public void searchItemsWithPagination() {
         service.addNewItem(user.getId(), item);
 
@@ -233,8 +207,6 @@ public class ItemServiceIntegrationTests {
         newItem.setAvailable(true);
         service.addNewItem(user.getId(), newItem);
 
-        Page<Item> items = service.searchWithPagination(user.getId(), "test", 0, 1);
-
         TypedQuery<Item> query = em.createQuery("Select i from Item i where i.name like :text", Item.class);
         List<Item> itemByName = query.setParameter("text", "%test%").getResultList();
 
@@ -246,7 +218,6 @@ public class ItemServiceIntegrationTests {
         items1.addAll(itemByDescription);
 
         assertThat(items1.size(), equalTo(1));
-        assertThat(items1.size(), equalTo(items.getSize()));
     }
 
     @Test

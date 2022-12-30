@@ -17,8 +17,6 @@ public interface ItemService {
 
     Item put(int userId, int id, Item item);
 
-    List<Item> search(int userId, String text);
-
     Page<Item> searchWithPagination(int userId, String text, int from, int size);
 
     Comment addComment(int userId, int itemId, Comment comment);

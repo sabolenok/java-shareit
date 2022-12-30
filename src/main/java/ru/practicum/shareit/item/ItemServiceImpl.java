@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +21,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Comparator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -134,23 +128,11 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Item> search(int userId, String text) {
-        if (text.isBlank()) {
-            return new ArrayList<>();
-        }
-        List<Item> itemsByName = repository.findByNameLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
-        List<Item> itemsByDescr = repository.findByDescriptionLikeIgnoreCaseAndAvailableOrderById("%" + text.toLowerCase() + "%", true);
-        Set<Item> items = new HashSet<>();
-        items.addAll(itemsByName);
-        items.addAll(itemsByDescr);
-        List<Item> sortedItems = items.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
-        fillCommentsAndBookingsInItems(userId, sortedItems);
-        return sortedItems;
-    }
-
-    @Transactional(readOnly = true)
-    @Override
     public Page<Item> searchWithPagination(int userId, String text, int from, int size) {
+        if (text.isBlank()) {
+            return new PageImpl<>(new ArrayList<>());
+        }
+        text = text.toUpperCase();
         Page<Item> items = repository.findByNameOrDescriptionNative(text, text, PageRequest.of(from / size, size));
         fillCommentsAndBookingsInItems(userId, items);
         return items;
