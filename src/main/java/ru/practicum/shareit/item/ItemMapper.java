@@ -19,7 +19,7 @@ public class ItemMapper {
         itemDto.setAvailable(item.getAvailable());
         List<CommentDto> commentsDto = new ArrayList<>();
         List<Comment> comments = item.getComments();
-        if (!(comments == null)) {
+        if (comments != null) {
             for (Comment c : comments) {
                 commentsDto.add(CommentMapper.toCommentDto(c));
             }

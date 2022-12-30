@@ -66,10 +66,10 @@ public class ItemServiceImpl implements ItemService {
         if (foundItem.isPresent()) {
             Item item = foundItem.get();
             if (item.getUserId() == userId) {
-                setBookingDates(item, null);
+                setBookingDatesForOne(item);
             }
             Map<Integer, User> users = getAllUsers();
-            setComments(item, users, null);
+            setCommentsForOne(item, users);
             return item;
         } else {
             throw new NotFoundException("Вещь не найдена!");
@@ -126,9 +126,9 @@ public class ItemServiceImpl implements ItemService {
         } else {
             throw new NotFoundException("Вещь не найдена!");
         }
-        setBookingDates(item, null);
+        setBookingDatesForOne(item);
         Map<Integer, User> users = getAllUsers();
-        setComments(item, users, null);
+        setCommentsForOne(item, users);
         return repository.save(item);
     }
 
@@ -193,9 +193,9 @@ public class ItemServiceImpl implements ItemService {
         Map<Integer, User> users = getAllUsers();
         for (Item item : items) {
             if (item.getUserId() == userId) {
-                setBookingDates(item, bookings);
+                setBookingDatesForAll(item, bookings);
             }
-            setComments(item, users, comments);
+            setCommentsForAll(item, users, comments);
         }
     }
 
@@ -205,50 +205,55 @@ public class ItemServiceImpl implements ItemService {
         Map<Integer, User> users = getAllUsers();
         for (Item item : items) {
             if (item.getUserId() == userId) {
-                setBookingDates(item, bookings);
+                setBookingDatesForAll(item, bookings);
             }
-            setComments(item, users, comments);
+            setCommentsForAll(item, users, comments);
         }
     }
 
-    private void setBookingDates(Item item, List<Booking> allBookings) {
-        if (allBookings == null) {
-            Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-            if (lastBooking != null) {
-                item.setLastBooking(BookingMapper.toBookingInItem(lastBooking));
-            }
-            Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
-            if (nextBooking != null) {
-                item.setNextBooking(BookingMapper.toBookingInItem(nextBooking));
-            }
-        } else {
-            List<Booking> lastBookings = allBookings.stream()
-                            .filter(x -> x.getItemId() == item.getId())
-                            .filter(x -> x.getStart().isBefore(LocalDateTime.now()))
-                            .collect(Collectors.toList());
-            if (!lastBookings.isEmpty()) {
-                item.setLastBooking(BookingMapper.toBookingInItem(lastBookings.get(0)));
-            }
-            List<Booking> nextBookings = allBookings.stream()
-                    .filter(x -> x.getItemId() == item.getId())
-                    .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
-                    .collect(Collectors.toList());
-            if (!nextBookings.isEmpty()) {
-                item.setNextBooking(BookingMapper.toBookingInItem(nextBookings.get(nextBookings.size() - 1)));
-            }
+    private void setBookingDatesForAll(Item item, List<Booking> allBookings) {
+        List<Booking> lastBookings = allBookings.stream()
+                        .filter(x -> x.getItemId() == item.getId())
+                        .filter(x -> x.getStart().isBefore(LocalDateTime.now()))
+                        .collect(Collectors.toList());
+        if (!lastBookings.isEmpty()) {
+            item.setLastBooking(BookingMapper.toBookingInItem(lastBookings.get(0)));
+        }
+        List<Booking> nextBookings = allBookings.stream()
+                .filter(x -> x.getItemId() == item.getId())
+                .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
+                .collect(Collectors.toList());
+        if (!nextBookings.isEmpty()) {
+            item.setNextBooking(BookingMapper.toBookingInItem(nextBookings.get(nextBookings.size() - 1)));
         }
     }
 
-    private void setComments(Item item, Map<Integer, User> users, List<Comment> allComments) {
-        List<Comment> comments;
-        if (allComments == null) {
-            comments = commentRepository.findByItemId(item.getId());
-        } else {
-            comments = allComments.stream().filter(x -> x.getItemId() == item.getId()).collect(Collectors.toList());
+    private void setBookingDatesForOne(Item item) {
+        Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+        if (lastBooking != null) {
+            item.setLastBooking(BookingMapper.toBookingInItem(lastBooking));
         }
-        for (Comment c : comments) {
-            if (users.containsKey(c.getAuthorId())) {
-                c.setAuthorName(users.get(c.getAuthorId()).getName());
+        Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now());
+        if (nextBooking != null) {
+            item.setNextBooking(BookingMapper.toBookingInItem(nextBooking));
+        }
+    }
+
+    private void setCommentsForAll(Item item, Map<Integer, User> users, List<Comment> allComments) {
+        List<Comment> comments = allComments.stream().filter(x -> x.getItemId() == item.getId()).collect(Collectors.toList());
+        for (Comment comment : comments) {
+            if (users.containsKey(comment.getAuthorId())) {
+                comment.setAuthorName(users.get(comment.getAuthorId()).getName());
+            }
+        }
+        item.setComments(comments);
+    }
+
+    private void setCommentsForOne(Item item, Map<Integer, User> users) {
+        List<Comment> comments = commentRepository.findByItemId(item.getId());
+        for (Comment comment : comments) {
+            if (users.containsKey(comment.getAuthorId())) {
+                comment.setAuthorName(users.get(comment.getAuthorId()).getName());
             }
         }
         item.setComments(comments);

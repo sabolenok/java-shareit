@@ -136,27 +136,6 @@ public class BookingServiceIntegrationTests {
     }
 
     @Test
-    public void getBookingsByUserId() {
-        service.addNewBooking(booker.getId(), booking);
-
-        booking = new Booking();
-        booking.setStart(LocalDateTime.now().plusMinutes(10));
-        booking.setEnd(LocalDateTime.now().plusMinutes(20));
-        booking.setItemId(item.getId());
-        booking.setItem(item);
-        booking.setUserId(owner.getId());
-        booking.setBooker(owner);
-        booking.setStatus(BookingStatus.WAITING);
-
-        List<Booking> bookings = service.getByUserId(booker.getId(), "ALL");
-
-        TypedQuery<Booking> query = em.createQuery("Select b from Booking b where b.userId = :userId", Booking.class);
-        List<Booking> bookings1 = query.setParameter("userId", booker.getId()).getResultList();
-
-        assertThat(bookings.size(), equalTo(bookings1.size()));
-    }
-
-    @Test
     public void getBookingsByUserIdWithPagination() {
         service.addNewBooking(booker.getId(), booking);
 
@@ -175,27 +154,6 @@ public class BookingServiceIntegrationTests {
         List<Booking> bookings1 = query.setParameter("userId", booker.getId()).getResultList();
 
         assertThat(((int) bookings.getTotalElements()), equalTo(bookings1.size()));
-    }
-
-    @Test
-    public void getBookingsByOwnerId() {
-        service.addNewBooking(booker.getId(), booking);
-
-        booking = new Booking();
-        booking.setStart(LocalDateTime.now().plusMinutes(10));
-        booking.setEnd(LocalDateTime.now().plusMinutes(20));
-        booking.setItemId(item.getId());
-        booking.setItem(item);
-        booking.setUserId(owner.getId());
-        booking.setBooker(owner);
-        booking.setStatus(BookingStatus.WAITING);
-
-        List<Booking> bookings = service.getByOwnerId(owner.getId(), "ALL");
-
-        TypedQuery<Booking> query = em.createQuery("Select b from Booking b", Booking.class);
-        List<Booking> bookings1 = query.getResultList();
-
-        assertThat(bookings.size(), equalTo(bookings1.size()));
     }
 
     @Test

@@ -48,19 +48,12 @@ public class ItemController {
 
     @GetMapping("/all")
     public List<ItemDto> getAllWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                              @RequestParam(required = false) @Min(0) Integer from,
-                                              @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
-        if (from == null || size == null) {
-            return itemService.getAll(userId)
-                    .stream()
-                    .map(ItemMapper::toItemDto)
-                    .collect(Collectors.toList());
-        } else {
-            return itemService.getAllWithPagination(userId, from, size)
-                    .stream()
-                    .map(ItemMapper::toItemDto)
-                    .collect(Collectors.toList());
-        }
+                                              @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                              @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return itemService.getAllWithPagination(userId, from, size)
+                .stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/{id}")
@@ -81,19 +74,12 @@ public class ItemController {
     @GetMapping("/search/all")
     public List<ItemDto> searchItemWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                                   @RequestParam String text,
-                                                  @RequestParam(required = false) @Min(0) Integer from,
-                                              @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
-        if (from == null || size == null) {
-            return itemService.search(userId, text)
-                    .stream()
-                    .map(ItemMapper::toItemDto)
-                    .collect(Collectors.toList());
-        } else {
-            return itemService.searchWithPagination(userId, text, from, size)
-                    .stream()
-                    .map(ItemMapper::toItemDto)
-                    .collect(Collectors.toList());
-        }
+                                                  @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                              @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return itemService.searchWithPagination(userId, text, from, size)
+                .stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("{itemId}/comment")

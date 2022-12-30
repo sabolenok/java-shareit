@@ -143,19 +143,6 @@ public class BookingControllerTests {
     }
 
     @Test
-    void getBookingsByUserTest() throws Exception {
-        when(bookingServiceMock.getByUserId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
-        mockMvc.perform(get("/bookings")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "ALL"))
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].status").value(bookingDto.getStatus().name()));
-    }
-
-    @Test
     void getBookingsByUserWithPaginationTest() throws Exception {
         when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
@@ -173,8 +160,6 @@ public class BookingControllerTests {
     void getBookingsByUserWithoutPaginationParamsTest() throws Exception {
         when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
-        when(bookingServiceMock.getByUserId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
 
         mockMvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -187,8 +172,6 @@ public class BookingControllerTests {
     void getBookingsByUserWithoutFirstPaginationParamTest() throws Exception {
         when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
-        when(bookingServiceMock.getByUserId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
 
         mockMvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -202,8 +185,6 @@ public class BookingControllerTests {
     void getBookingsByUserWithoutSecondPaginationParamTest() throws Exception {
         when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
-        when(bookingServiceMock.getByUserId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
 
         mockMvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -211,19 +192,6 @@ public class BookingControllerTests {
                         .param("from", "1"))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
-    }
-
-    @Test
-    void getBookingsByOwnerTest() throws Exception {
-        when(bookingServiceMock.getByOwnerId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
-        mockMvc.perform(get("/bookings/owner")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "ALL"))
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(bookingDto.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].status").value(bookingDto.getStatus().name()));
     }
 
     @Test
@@ -244,8 +212,6 @@ public class BookingControllerTests {
     void getBookingsByOwnerWithoutPaginationParamsTest() throws Exception {
         when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
-        when(bookingServiceMock.getByOwnerId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1)
@@ -258,8 +224,6 @@ public class BookingControllerTests {
     void getBookingsByOwnerWithoutFirstPaginationParamTest() throws Exception {
         when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
-        when(bookingServiceMock.getByOwnerId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1)
@@ -273,8 +237,6 @@ public class BookingControllerTests {
     void getBookingsByOwnerWithoutSecondPaginationParamTest() throws Exception {
         when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
-        when(bookingServiceMock.getByOwnerId(anyInt(), anyString()))
-                .thenReturn(List.of(booking));
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1)
@@ -738,19 +700,20 @@ public class BookingControllerTests {
                 .thenReturn(Optional.ofNullable(user));
         Mockito.when(itemRepo.findAll())
                 .thenReturn(List.of(item));
-        Mockito.when(repository.findByUserIdOrderByEndDesc(anyInt()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndStartBeforeAndEndAfterOrderByEndDesc(anyInt(), any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndEndBeforeOrderByEndDesc(anyInt(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndStartAfterOrderByEndDesc(anyInt(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndStatusOrderByEndDesc(anyInt(), any()))
-                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByUserId(anyInt(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndStartBeforeAndEndAfter(anyInt(), any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndEndBefore(anyInt(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndStartAfter(anyInt(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndStatus(anyInt(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByUserId(1, s).get(0), booking);
+            Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 5)
+                    .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
 
@@ -770,26 +733,27 @@ public class BookingControllerTests {
                 .thenReturn(Optional.ofNullable(user));
         Mockito.when(itemRepo.findAll())
                 .thenReturn(List.of(item));
-        Mockito.when(repository.findByUserIdOrderByEndDesc(anyInt()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndStartBeforeAndEndAfterOrderByEndDesc(anyInt(), any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndEndBeforeOrderByEndDesc(anyInt(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndStartAfterOrderByEndDesc(anyInt(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByUserIdAndStatusOrderByEndDesc(anyInt(), any()))
-                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByUserId(anyInt(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndStartBeforeAndEndAfter(anyInt(), any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndEndBefore(anyInt(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndStartAfter(anyInt(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByUserIdAndStatus(anyInt(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByUserId(1, s).get(0), booking);
+            Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 5)
+                    .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
 
     @Test
     public void getBookingByUserIdUnknownStateThrowsException() {
         try {
-            bookingService.getByUserId(1, "wrong_state");
+            bookingService.getByUserIdWithPagination(1, "wrong_state", 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: wrong_state", e.getMessage());
         }
@@ -801,7 +765,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.ofNullable(user));
 
         try {
-            bookingService.getByUserId(1, State.TEST.name());
+            bookingService.getByUserIdWithPagination(1, State.TEST.name(), 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }
@@ -813,7 +777,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.empty());
 
         try {
-            bookingService.getByUserId(1, "ALL");
+            bookingService.getByUserIdWithPagination(1, "ALL", 0, 5);
         } catch (NotFoundException e) {
             Assertions.assertEquals("Пользователь не найден", e.getMessage());
         }
@@ -879,19 +843,20 @@ public class BookingControllerTests {
                 .thenReturn(List.of(item));
         Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
                 .thenReturn(List.of(item));
-        Mockito.when(repository.findByItemIdInOrderByEndDesc(any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndStartBeforeAndEndAfterOrderByEndDesc(any(), any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndEndBeforeOrderByEndDesc(any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndStartAfterOrderByEndDesc(any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndStatusOrderByEndDesc(any(), any()))
-                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByItemIdIn(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStartBeforeAndEndAfter(any(), any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndEndBefore(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStartAfter(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStatus(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByOwnerId(1, s).get(0), booking);
+            Assertions.assertEquals(bookingService.getByOwnerIdWithPagination(1, s, 0, 5)
+                    .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
 
@@ -911,31 +876,32 @@ public class BookingControllerTests {
         Mockito.when(userRepo.findById(anyInt()))
                 .thenReturn(Optional.ofNullable(user));
         Mockito.when(userRepo.findAll())
-                .thenReturn(List.of(userOther));
+                .thenReturn(List.of(user));
         Mockito.when(itemRepo.findAll())
                 .thenReturn(List.of(item));
         Mockito.when(itemRepo.findAllByUserIdOrderById(anyInt()))
                 .thenReturn(List.of(item));
-        Mockito.when(repository.findByItemIdInOrderByEndDesc(any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndStartBeforeAndEndAfterOrderByEndDesc(any(), any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndEndBeforeOrderByEndDesc(any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndStartAfterOrderByEndDesc(any(), any()))
-                .thenReturn(List.of(booking));
-        Mockito.when(repository.findByItemIdInAndStatusOrderByEndDesc(any(), any()))
-                .thenReturn(List.of(booking));
+        Mockito.when(repository.findByItemIdIn(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStartBeforeAndEndAfter(any(), any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndEndBefore(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStartAfter(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        Mockito.when(repository.findByItemIdInAndStatus(any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByOwnerId(1, s).get(0), booking);
+            Assertions.assertEquals(bookingService.getByOwnerIdWithPagination(1, s, 0, 5)
+                    .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
 
     @Test
     public void getBookingByOwnerIdWithWrongStateThrowsException() {
         try {
-            bookingService.getByOwnerId(1, "wrong_state");
+            bookingService.getByOwnerIdWithPagination(1, "wrong_state", 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: wrong_state", e.getMessage());
         }
@@ -949,7 +915,7 @@ public class BookingControllerTests {
                 .thenReturn(List.of(item));
 
         try {
-            bookingService.getByOwnerId(1, State.TEST.name());
+            bookingService.getByOwnerIdWithPagination(1, State.TEST.name(), 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }
@@ -961,7 +927,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.empty());
 
         try {
-            bookingService.getByOwnerId(1, "ALL");
+            bookingService.getByOwnerIdWithPagination(1, "ALL", 0, 5);
         } catch (NotFoundException e) {
             Assertions.assertEquals("Пользователь не найден", e.getMessage());
         }
@@ -977,7 +943,7 @@ public class BookingControllerTests {
                 .thenReturn(new ArrayList<>());
 
         try {
-            bookingService.getByOwnerId(1, "ALL");
+            bookingService.getByOwnerIdWithPagination(1, "ALL", 0, 5);
         } catch (NotFoundException e) {
             Assertions.assertEquals("У пользователь не найдено вещей", e.getMessage());
         }

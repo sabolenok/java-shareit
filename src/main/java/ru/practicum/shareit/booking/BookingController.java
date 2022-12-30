@@ -48,36 +48,22 @@ public class BookingController {
     @GetMapping()
     public List<BookingDto> getByUser(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                       @RequestParam(defaultValue = "ALL") String state,
-                                      @RequestParam(required = false) @Min(0) Integer from,
-                                      @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
-        if (from == null || size == null) {
-            return bookingService.getByUserId(userId, state)
-                    .stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
-        } else {
-            return bookingService.getByUserIdWithPagination(userId, state, from, size)
-                    .stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
-        }
+                                      @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                      @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return bookingService.getByUserIdWithPagination(userId, state, from, size)
+                .stream()
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getByOwner(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                        @RequestParam(defaultValue = "ALL") String state,
-                                       @RequestParam(required = false) @Min(0) Integer from,
-                                       @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
-        if (from == null || size == null) {
-            return bookingService.getByOwnerId(userId, state)
-                    .stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
-        } else {
-            return bookingService.getByOwnerIdWithPagination(userId, state, from, size)
-                    .stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
-        }
+                                       @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                       @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return bookingService.getByOwnerIdWithPagination(userId, state, from, size)
+                .stream()
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 }

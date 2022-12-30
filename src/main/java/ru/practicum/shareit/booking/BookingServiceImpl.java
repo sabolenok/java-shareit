@@ -131,47 +131,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public List<Booking> getByUserId(int userId, String requestedState) {
-
-        State state = getRequestedState(requestedState);
-        User booker = checkUser(userId);
-        List<Booking> bookings;
-
-        switch (state) {
-            case ALL:
-                bookings = repository.findByUserIdOrderByEndDesc(userId);
-                break;
-            case CURRENT:
-                bookings = repository.findByUserIdAndStartBeforeAndEndAfterOrderByEndDesc(userId, LocalDateTime.now(),
-                        LocalDateTime.now());
-                break;
-            case PAST:
-                bookings = repository.findByUserIdAndEndBeforeOrderByEndDesc(userId, LocalDateTime.now());
-                break;
-            case FUTURE:
-                bookings = repository.findByUserIdAndStartAfterOrderByEndDesc(userId, LocalDateTime.now());
-                break;
-            case WAITING:
-                bookings = repository.findByUserIdAndStatusOrderByEndDesc(userId, BookingStatus.WAITING);
-                break;
-            case REJECTED:
-                bookings = repository.findByUserIdAndStatusOrderByEndDesc(userId, BookingStatus.REJECTED);
-                break;
-            default:
-                throw new UnsupportedStateException("Unknown state: " + state);
-        }
-
-        List<Item> allItems = getAllItems();
-        for (Booking booking : bookings) {
-            fillItem(booking, allItems);
-            booking.setBooker(booker);
-        }
-
-        return bookings;
-    }
-
-    @Transactional
-    @Override
     public Page<Booking> getByUserIdWithPagination(int userId, String requestedState, int from, int size) {
 
         State state = getRequestedState(requestedState);
@@ -207,53 +166,6 @@ public class BookingServiceImpl implements BookingService {
         for (Booking booking : bookings) {
             fillItem(booking, allItems);
             booking.setBooker(booker);
-        }
-
-        return bookings;
-    }
-
-    @Transactional
-    @Override
-    public List<Booking> getByOwnerId(int userId, String requestedState) {
-
-        State state = getRequestedState(requestedState);
-
-        checkUser(userId);
-
-        List<Item> userItems = checkUserItems(userId);
-
-        Set<Integer> itemId = userItems.stream().map(Item::getId).collect(Collectors.toSet());
-        List<Booking> bookings;
-
-        switch (state) {
-            case ALL:
-                bookings = repository.findByItemIdInOrderByEndDesc(itemId);
-                break;
-            case CURRENT:
-                bookings = repository.findByItemIdInAndStartBeforeAndEndAfterOrderByEndDesc(itemId, LocalDateTime.now(),
-                        LocalDateTime.now());
-                break;
-            case PAST:
-                bookings = repository.findByItemIdInAndEndBeforeOrderByEndDesc(itemId, LocalDateTime.now());
-                break;
-            case FUTURE:
-                bookings = repository.findByItemIdInAndStartAfterOrderByEndDesc(itemId, LocalDateTime.now());
-                break;
-            case WAITING:
-                bookings = repository.findByItemIdInAndStatusOrderByEndDesc(itemId, BookingStatus.WAITING);
-                break;
-            case REJECTED:
-                bookings = repository.findByItemIdInAndStatusOrderByEndDesc(itemId, BookingStatus.REJECTED);
-                break;
-            default:
-                throw new UnsupportedStateException("Unknown state: " + state);
-        }
-
-        List<Item> allItems = getAllItems();
-        List<User> allUsers = getAllUsers();
-        for (Booking booking : bookings) {
-            fillItem(booking, allItems);
-            fillUser(booking, allUsers);
         }
 
         return bookings;

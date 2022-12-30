@@ -44,19 +44,12 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDto> getAllWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                             @RequestParam(required = false) @Min(0) Integer from,
-                                             @RequestParam(required = false) @Min(1) @Max(100) Integer size) {
-        if (from == null || size == null) {
-            return itemRequestService.getAll(userId)
-                    .stream()
-                    .map(ItemRequestMapper::toItemRequestDto)
-                    .collect(Collectors.toList());
-        } else {
-            return itemRequestService.getAllWithPagination(userId, from, size)
-                    .stream()
-                    .map(ItemRequestMapper::toItemRequestDto)
-                    .collect(Collectors.toList());
-        }
+                                             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                             @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return itemRequestService.getAllWithPagination(userId, from, size)
+                .stream()
+                .map(ItemRequestMapper::toItemRequestDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
