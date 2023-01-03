@@ -9,8 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingInItem;
 @RequiredArgsConstructor
 public class BookingMapper {
 
-    public BookingDto toBookingDto(Booking booking) {
-        // modelMapper не может смаппить, т.к. для setItemId соответствует нескольким свойствам источника
+    public static BookingDto toBookingDto(Booking booking) {
         BookingDto bookingDto = new BookingDto();
         bookingDto.setId(booking.getId());
         bookingDto.setStart(booking.getStart());
@@ -21,7 +20,7 @@ public class BookingMapper {
         return bookingDto;
     }
 
-    public Booking toBooking(BookingDto bookingDto) {
+    public static Booking toBooking(BookingDto bookingDto) {
         Booking booking = new Booking();
         booking.setId(bookingDto.getId());
         booking.setStart(bookingDto.getStart());
@@ -36,7 +35,7 @@ public class BookingMapper {
         return booking;
     }
 
-    public BookingInItem toBookingInItem(Booking booking) {
+    public static BookingInItem toBookingInItem(Booking booking) {
         BookingInItem bookingInItem = new BookingInItem();
         bookingInItem.setId(booking.getId());
         bookingInItem.setStart(booking.getStart());

@@ -36,7 +36,7 @@ public class Item {
     private Boolean available;
     @Column(name = "owner_id", nullable = false)
     private int userId;
-    @Column(name = "request_id", nullable = false)
+    @Column(name = "request_id")
     private int requestId;
     @Transient
     private User owner;

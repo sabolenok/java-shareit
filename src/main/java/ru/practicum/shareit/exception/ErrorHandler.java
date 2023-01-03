@@ -34,12 +34,6 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(AlreadyExistEmailException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleAlreadyExistEmail(final AlreadyExistEmailException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
     @ExceptionHandler(BookingDateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBookingDateException(final BookingDateException e) {
