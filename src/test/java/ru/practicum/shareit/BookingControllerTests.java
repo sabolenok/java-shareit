@@ -144,7 +144,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByUserWithPaginationTest() throws Exception {
-        when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByUserId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings")
@@ -158,7 +158,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByUserWithoutPaginationParamsTest() throws Exception {
-        when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByUserId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings")
@@ -170,7 +170,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByUserWithoutFirstPaginationParamTest() throws Exception {
-        when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByUserId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings")
@@ -183,7 +183,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByUserWithoutSecondPaginationParamTest() throws Exception {
-        when(bookingServiceMock.getByUserIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByUserId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings")
@@ -196,7 +196,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByOwnerWithPaginationTest() throws Exception {
-        when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByOwnerId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings/owner")
@@ -210,7 +210,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByOwnerWithoutPaginationParamsTest() throws Exception {
-        when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByOwnerId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings/owner")
@@ -222,7 +222,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByOwnerWithoutFirstPaginationParamTest() throws Exception {
-        when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByOwnerId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings/owner")
@@ -235,7 +235,7 @@ public class BookingControllerTests {
 
     @Test
     void getBookingsByOwnerWithoutSecondPaginationParamTest() throws Exception {
-        when(bookingServiceMock.getByOwnerIdWithPagination(anyInt(), anyString(), anyInt(), anyInt()))
+        when(bookingServiceMock.getByOwnerId(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         mockMvc.perform(get("/bookings/owner")
@@ -712,7 +712,7 @@ public class BookingControllerTests {
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 5)
+            Assertions.assertEquals(bookingService.getByUserId(1, s, 0, 5)
                     .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
@@ -745,7 +745,7 @@ public class BookingControllerTests {
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 5)
+            Assertions.assertEquals(bookingService.getByUserId(1, s, 0, 5)
                     .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
@@ -753,7 +753,7 @@ public class BookingControllerTests {
     @Test
     public void getBookingByUserIdUnknownStateThrowsException() {
         try {
-            bookingService.getByUserIdWithPagination(1, "wrong_state", 0, 5);
+            bookingService.getByUserId(1, "wrong_state", 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: wrong_state", e.getMessage());
         }
@@ -765,7 +765,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.ofNullable(user));
 
         try {
-            bookingService.getByUserIdWithPagination(1, State.TEST.name(), 0, 5);
+            bookingService.getByUserId(1, State.TEST.name(), 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }
@@ -777,7 +777,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.empty());
 
         try {
-            bookingService.getByUserIdWithPagination(1, "ALL", 0, 5);
+            bookingService.getByUserId(1, "ALL", 0, 5);
         } catch (NotFoundException e) {
             Assertions.assertEquals("Пользователь не найден", e.getMessage());
         }
@@ -809,7 +809,7 @@ public class BookingControllerTests {
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByUserIdWithPagination(1, s, 0, 2).getSize(), 1);
+            Assertions.assertEquals(bookingService.getByUserId(1, s, 0, 2).getSize(), 1);
         }
     }
 
@@ -819,7 +819,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.ofNullable(user));
 
         try {
-            bookingService.getByUserIdWithPagination(1, State.TEST.name(), 0, 2);
+            bookingService.getByUserId(1, State.TEST.name(), 0, 2);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }
@@ -855,7 +855,7 @@ public class BookingControllerTests {
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByOwnerIdWithPagination(1, s, 0, 5)
+            Assertions.assertEquals(bookingService.getByOwnerId(1, s, 0, 5)
                     .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
@@ -893,7 +893,7 @@ public class BookingControllerTests {
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByOwnerIdWithPagination(1, s, 0, 5)
+            Assertions.assertEquals(bookingService.getByOwnerId(1, s, 0, 5)
                     .stream().findFirst(), Optional.ofNullable(booking));
         }
     }
@@ -901,7 +901,7 @@ public class BookingControllerTests {
     @Test
     public void getBookingByOwnerIdWithWrongStateThrowsException() {
         try {
-            bookingService.getByOwnerIdWithPagination(1, "wrong_state", 0, 5);
+            bookingService.getByOwnerId(1, "wrong_state", 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: wrong_state", e.getMessage());
         }
@@ -915,7 +915,7 @@ public class BookingControllerTests {
                 .thenReturn(List.of(item));
 
         try {
-            bookingService.getByOwnerIdWithPagination(1, State.TEST.name(), 0, 5);
+            bookingService.getByOwnerId(1, State.TEST.name(), 0, 5);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }
@@ -927,7 +927,7 @@ public class BookingControllerTests {
                 .thenReturn(Optional.empty());
 
         try {
-            bookingService.getByOwnerIdWithPagination(1, "ALL", 0, 5);
+            bookingService.getByOwnerId(1, "ALL", 0, 5);
         } catch (NotFoundException e) {
             Assertions.assertEquals("Пользователь не найден", e.getMessage());
         }
@@ -943,7 +943,7 @@ public class BookingControllerTests {
                 .thenReturn(new ArrayList<>());
 
         try {
-            bookingService.getByOwnerIdWithPagination(1, "ALL", 0, 5);
+            bookingService.getByOwnerId(1, "ALL", 0, 5);
         } catch (NotFoundException e) {
             Assertions.assertEquals("У пользователь не найдено вещей", e.getMessage());
         }
@@ -979,7 +979,7 @@ public class BookingControllerTests {
                 .thenReturn(new PageImpl<>(List.of(booking)));
 
         for (String s : states) {
-            Assertions.assertEquals(bookingService.getByOwnerIdWithPagination(1, s, 0, 2).getSize(), 1);
+            Assertions.assertEquals(bookingService.getByOwnerId(1, s, 0, 2).getSize(), 1);
         }
     }
 
@@ -991,7 +991,7 @@ public class BookingControllerTests {
                 .thenReturn(List.of(item));
 
         try {
-            bookingService.getByOwnerIdWithPagination(1, State.TEST.name(), 0, 2);
+            bookingService.getByOwnerId(1, State.TEST.name(), 0, 2);
         } catch (UnsupportedStateException e) {
             Assertions.assertEquals("Unknown state: TEST", e.getMessage());
         }

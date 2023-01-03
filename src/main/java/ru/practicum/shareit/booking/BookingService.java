@@ -9,7 +9,7 @@ public interface BookingService {
 
     Booking getById(int userId, int id);
 
-    Page<Booking> getByUserIdWithPagination(int userId, String state, int from, int size);
+    Page<Booking> getByUserId(int userId, String state, int from, int size);
 
-    Page<Booking> getByOwnerIdWithPagination(int userId, String state, int from, int size);
+    Page<Booking> getByOwnerId(int userId, String state, int from, int size);
 }

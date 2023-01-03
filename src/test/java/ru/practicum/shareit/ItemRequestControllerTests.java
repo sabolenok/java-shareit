@@ -113,7 +113,7 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsTest() throws Exception {
-        when(itemRequestServiceMock.getAll(anyInt()))
+        when(itemRequestServiceMock.getAllForUser(anyInt()))
                 .thenReturn(List.of(itemRequest));
         mockMvc.perform(get("/requests")
                         .header("X-Sharer-User-Id", 1))
@@ -125,7 +125,7 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsWithPaginationTest() throws Exception {
-        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+        when(itemRequestServiceMock.getAllOthersUsers(anyInt(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(itemRequest)));
 
         mockMvc.perform(get("/requests/all")
@@ -138,9 +138,9 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsWithoutPaginationParamsTest() throws Exception {
-        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+        when(itemRequestServiceMock.getAllOthersUsers(anyInt(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(itemRequest)));
-        when(itemRequestServiceMock.getAll(anyInt()))
+        when(itemRequestServiceMock.getAllForUser(anyInt()))
                 .thenReturn(List.of(itemRequest));
 
         mockMvc.perform(get("/requests/all")
@@ -151,9 +151,9 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsWithoutFirstPaginationParamTest() throws Exception {
-        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+        when(itemRequestServiceMock.getAllOthersUsers(anyInt(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(itemRequest)));
-        when(itemRequestServiceMock.getAll(anyInt()))
+        when(itemRequestServiceMock.getAllForUser(anyInt()))
                 .thenReturn(List.of(itemRequest));
 
         mockMvc.perform(get("/requests/all")
@@ -165,9 +165,9 @@ public class ItemRequestControllerTests {
 
     @Test
     void getAllItemRequestsWithoutSecondPaginationParamTest() throws Exception {
-        when(itemRequestServiceMock.getAllWithPagination(anyInt(), anyInt(), anyInt()))
+        when(itemRequestServiceMock.getAllOthersUsers(anyInt(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(itemRequest)));
-        when(itemRequestServiceMock.getAll(anyInt()))
+        when(itemRequestServiceMock.getAllForUser(anyInt()))
                 .thenReturn(List.of(itemRequest));
 
         mockMvc.perform(get("/requests/all")
@@ -207,7 +207,7 @@ public class ItemRequestControllerTests {
         Mockito.when(userRepository.findById(anyInt()))
                 .thenReturn(Optional.ofNullable(user));
 
-        Assertions.assertEquals(itemRequestService.getAll(user.getId()).size(), 1);
+        Assertions.assertEquals(itemRequestService.getAllForUser(user.getId()).size(), 1);
     }
 
     @Test
@@ -221,7 +221,7 @@ public class ItemRequestControllerTests {
         Mockito.when(itemRepository.findAll())
                 .thenReturn(new ArrayList<>());
 
-        Assertions.assertEquals(itemRequestService.getAll(user.getId()).size(), 1);
+        Assertions.assertEquals(itemRequestService.getAllForUser(user.getId()).size(), 1);
     }
 
     @Test
@@ -235,7 +235,7 @@ public class ItemRequestControllerTests {
         Mockito.when(itemRepository.findAll())
                 .thenReturn(null);
 
-        Assertions.assertEquals(itemRequestService.getAll(user.getId()).size(), 1);
+        Assertions.assertEquals(itemRequestService.getAllForUser(user.getId()).size(), 1);
     }
 
     @Test
@@ -244,7 +244,7 @@ public class ItemRequestControllerTests {
                 .thenReturn(Optional.empty());
 
         try {
-            itemRequestService.getAll(1);
+            itemRequestService.getAllForUser(1);
         } catch  (NotFoundException e) {
             Assertions.assertEquals("Пользователь не найден!", e.getMessage());
         }
@@ -325,7 +325,7 @@ public class ItemRequestControllerTests {
         Mockito.when(userRepository.findById(anyInt()))
                 .thenReturn(Optional.ofNullable(user));
 
-        Assertions.assertEquals(itemRequestService.getAllWithPagination(1, 1, 1).getSize(), 1);
+        Assertions.assertEquals(itemRequestService.getAllOthersUsers(1, 1, 1).getSize(), 1);
     }
 
     @Test
@@ -334,7 +334,7 @@ public class ItemRequestControllerTests {
                 .thenReturn(Optional.empty());
 
         try {
-            itemRequestService.getAllWithPagination(1, 1, 1);
+            itemRequestService.getAllOthersUsers(1, 1, 1);
         } catch  (NotFoundException e) {
             Assertions.assertEquals("Пользователь не найден!", e.getMessage());
         }

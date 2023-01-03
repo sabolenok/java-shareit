@@ -50,7 +50,7 @@ public class BookingController {
                                       @RequestParam(defaultValue = "ALL") String state,
                                       @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
                                       @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
-        return bookingService.getByUserIdWithPagination(userId, state, from, size)
+        return bookingService.getByUserId(userId, state, from, size)
                 .stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
@@ -61,7 +61,7 @@ public class BookingController {
                                        @RequestParam(defaultValue = "ALL") String state,
                                        @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
                                        @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
-        return bookingService.getByOwnerIdWithPagination(userId, state, from, size)
+        return bookingService.getByOwnerId(userId, state, from, size)
                 .stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());

@@ -44,7 +44,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemRequest> getAll(int userId) {
+    public List<ItemRequest> getAllForUser(int userId) {
         Optional<User> foundUser = userRepository.findById(userId);
         if (foundUser.isEmpty()) {
             throw new NotFoundException("Пользователь не найден!");
@@ -76,7 +76,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public Page<ItemRequest> getAllWithPagination(int userId, int from, int size) {
+    public Page<ItemRequest> getAllOthersUsers(int userId, int from, int size) {
         Optional<User> foundUser = userRepository.findById(userId);
         if (foundUser.isEmpty()) {
             throw new NotFoundException("Пользователь не найден!");

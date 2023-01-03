@@ -148,7 +148,7 @@ public class BookingServiceIntegrationTests {
         booking.setBooker(owner);
         booking.setStatus(BookingStatus.WAITING);
 
-        Page<Booking> bookings = service.getByUserIdWithPagination(booker.getId(), "ALL", 0, 2);
+        Page<Booking> bookings = service.getByUserId(booker.getId(), "ALL", 0, 2);
 
         TypedQuery<Booking> query = em.createQuery("Select b from Booking b where b.userId = :userId", Booking.class);
         List<Booking> bookings1 = query.setParameter("userId", booker.getId()).getResultList();
@@ -169,7 +169,7 @@ public class BookingServiceIntegrationTests {
         booking.setBooker(owner);
         booking.setStatus(BookingStatus.WAITING);
 
-        Page<Booking> bookings = service.getByOwnerIdWithPagination(owner.getId(), "ALL", 0, 2);
+        Page<Booking> bookings = service.getByOwnerId(owner.getId(), "ALL", 0, 2);
 
         TypedQuery<Booking> query = em.createQuery("Select b from Booking b", Booking.class);
         List<Booking> bookings1 = query.getResultList();

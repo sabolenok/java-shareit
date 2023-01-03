@@ -8,10 +8,10 @@ public interface ItemRequestService {
 
     ItemRequest addNewItemRequest(int userId, ItemRequest itemRequest);
 
-    List<ItemRequest> getAll(int userId);
+    List<ItemRequest> getAllForUser(int userId);
 
     ItemRequest getById(int userId, int id);
 
-    Page<ItemRequest> getAllWithPagination(int userId, int from, int size);
+    Page<ItemRequest> getAllOthersUsers(int userId, int from, int size);
 
 }

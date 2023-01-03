@@ -131,7 +131,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public Page<Booking> getByUserIdWithPagination(int userId, String requestedState, int from, int size) {
+    public Page<Booking> getByUserId(int userId, String requestedState, int from, int size) {
 
         State state = getRequestedState(requestedState);
         User booker = checkUser(userId);
@@ -173,7 +173,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public Page<Booking> getByOwnerIdWithPagination(int userId, String requestedState, int from, int size) {
+    public Page<Booking> getByOwnerId(int userId, String requestedState, int from, int size) {
 
         State state = getRequestedState(requestedState);
 

@@ -72,15 +72,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Item> getAll(int userId) {
-        List<Item> items = repository.findAllByUserIdOrderById(userId);
-        fillCommentsAndBookingsInItems(userId, items);
-        return items;
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Page<Item> getAllWithPagination(int userId, int from, int size) {
+    public Page<Item> getAll(int userId, int from, int size) {
         Page<Item> items = repository.findAllByUserIdOrderById(userId, PageRequest.of(from / size, size));
         fillCommentsAndBookingsInItems(userId, items);
         return items;
@@ -128,7 +120,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<Item> searchWithPagination(int userId, String text, int from, int size) {
+    public Page<Item> search(int userId, String text, int from, int size) {
         if (text.isBlank()) {
             return new PageImpl<>(new ArrayList<>());
         }
@@ -167,18 +159,6 @@ public class ItemServiceImpl implements ItemService {
             comment.setCreated(LocalDateTime.now());
         }
         return commentRepository.save(comment);
-    }
-
-    private void fillCommentsAndBookingsInItems(int userId, List<Item> items) {
-        List<Comment> comments = getAllComments();
-        List<Booking> bookings = getAllBookings();
-        Map<Integer, User> users = getAllUsers();
-        for (Item item : items) {
-            if (item.getUserId() == userId) {
-                setBookingDatesForAll(item, bookings);
-            }
-            setCommentsForAll(item, users, comments);
-        }
     }
 
     private void fillCommentsAndBookingsInItems(int userId, Page<Item> items) {

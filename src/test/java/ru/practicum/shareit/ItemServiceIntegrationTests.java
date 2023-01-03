@@ -160,25 +160,6 @@ public class ItemServiceIntegrationTests {
     }
 
     @Test
-    public void getAllItems() {
-        service.addNewItem(user.getId(), item);
-
-        Item newItem = new Item();
-        newItem.setName("second item name");
-        newItem.setDescription("another item's description");
-        newItem.setAvailable(true);
-        service.addNewItem(user.getId(), newItem);
-
-        List<Item> items = service.getAll(user.getId());
-
-        TypedQuery<Item> query = em.createQuery("Select i from Item i", Item.class);
-        List<Item> item1 = query.getResultList();
-
-        assertThat(item1.size(), equalTo(2));
-        assertThat(item1.size(), equalTo(items.size()));
-    }
-
-    @Test
     public void getAllItemsWithPagination() {
         service.addNewItem(user.getId(), item);
 
@@ -188,7 +169,7 @@ public class ItemServiceIntegrationTests {
         newItem.setAvailable(true);
         service.addNewItem(user.getId(), newItem);
 
-        Page<Item> items = service.getAllWithPagination(user.getId(), 0, 2);
+        Page<Item> items = service.getAll(user.getId(), 0, 2);
 
         TypedQuery<Item> query = em.createQuery("Select i from Item i", Item.class);
         List<Item> item1 = query.getResultList();

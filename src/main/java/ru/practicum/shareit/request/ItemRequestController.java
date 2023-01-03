@@ -35,18 +35,18 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return itemRequestService.getAll(userId)
+    public List<ItemRequestDto> getAllForUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemRequestService.getAllForUser(userId)
                 .stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAllWithPagination(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
-                                             @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
-        return itemRequestService.getAllWithPagination(userId, from, size)
+    public List<ItemRequestDto> getAllOthersUsers(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                                  @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
+                                                  @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+        return itemRequestService.getAllOthersUsers(userId, from, size)
                 .stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());

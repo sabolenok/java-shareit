@@ -107,7 +107,7 @@ public class ItemRequestServiceIntegrationTests {
         newItemRequest.setRequestorId(user.getId());
         service.addNewItemRequest(user.getId(), newItemRequest);
 
-        List<ItemRequest> ir = service.getAll(user.getId());
+        List<ItemRequest> ir = service.getAllForUser(user.getId());
 
         TypedQuery<ItemRequest> query = em.createQuery(
                 "Select ir from ItemRequest ir",
@@ -127,7 +127,7 @@ public class ItemRequestServiceIntegrationTests {
         newItemRequest.setRequestorId(user.getId());
         service.addNewItemRequest(user.getId(), newItemRequest);
 
-        Page<ItemRequest> ir = service.getAllWithPagination(user.getId(), 0, 2);
+        Page<ItemRequest> ir = service.getAllOthersUsers(user.getId(), 0, 2);
 
         TypedQuery<ItemRequest> query = em.createQuery(
                 "Select ir from ItemRequest ir",
