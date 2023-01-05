@@ -35,7 +35,7 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public BookingDto put(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                          @PathVariable Integer bookingId,
+                          @PathVariable int bookingId,
                           @RequestParam Boolean approved) {
         return BookingMapper.toBookingDto(bookingService.put(userId, bookingId, approved));
     }
