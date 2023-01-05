@@ -17,4 +17,5 @@ public class ItemDto {
     private String description;
     @NotNull(message = "Статус доступности должен быть указан")
     private Boolean available;
+    private int requestId;
 }
