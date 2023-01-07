@@ -12,9 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +25,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ItemRequestDto add(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                              @Valid @RequestBody ItemRequestDto itemRequestDto) {
+                              @RequestBody ItemRequestDto itemRequestDto) {
         return ItemRequestMapper.toItemRequestDto(
                 itemRequestService.addNewItemRequest(userId, ItemRequestMapper.toItemRequest(itemRequestDto))
         );
@@ -44,8 +41,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDto> getAllOthersUsers(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                                  @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
-                                                  @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+                                                  @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                  @RequestParam(required = false, defaultValue = "100") Integer size) {
         return itemRequestService.getAllOthersUsers(userId, from, size)
                 .stream()
                 .map(ItemRequestMapper::toItemRequestDto)

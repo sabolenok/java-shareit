@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +26,7 @@ public class BookingController {
 
     @PostMapping
     public BookingDto add(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                          @Valid @RequestBody BookingDto bookingDto) {
+                          @RequestBody BookingDto bookingDto) {
         return BookingMapper.toBookingDto(bookingService.addNewBooking(userId, BookingMapper.toBooking(bookingDto)));
     }
 
@@ -47,9 +44,9 @@ public class BookingController {
 
     @GetMapping()
     public List<BookingDto> getByUser(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                      @RequestParam(defaultValue = "ALL") String state,
-                                      @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
-                                      @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+                                      @RequestParam String state,
+                                      @RequestParam(required = false, defaultValue = "0") Integer from,
+                                      @RequestParam(required = false, defaultValue = "100") Integer size) {
         return bookingService.getByUserId(userId, state, from, size)
                 .stream()
                 .map(BookingMapper::toBookingDto)
@@ -58,9 +55,9 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDto> getByOwner(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                       @RequestParam(defaultValue = "ALL") String state,
-                                       @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
-                                       @RequestParam(required = false, defaultValue = "100") @Min(1) @Max(100) Integer size) {
+                                       @RequestParam String state,
+                                       @RequestParam(required = false, defaultValue = "0") Integer from,
+                                       @RequestParam(required = false, defaultValue = "100") Integer size) {
         return bookingService.getByOwnerId(userId, state, from, size)
                 .stream()
                 .map(BookingMapper::toBookingDto)
